@@ -20,5 +20,6 @@
     "paths": {
       "autoSpy": ["./src/app/auto-spy"]
     }
-  }
+  },
+
 }
