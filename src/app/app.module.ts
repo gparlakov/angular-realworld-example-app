@@ -10,6 +10,13 @@ import { FooterComponent, HeaderComponent, SharedModule } from './shared';
 import { SettingsModule } from './settings/settings.module';
 import { ArticleModule } from './article/article.module';
 import { MomentModule } from 'ngx-moment';
+import { StoreModule, Store } from '@ngrx/store';
+import { reducers, metaReducers, State } from './state';
+import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { environment } from '../environments/environment';
+import { EffectsModule } from '@ngrx/effects';
+import { UserEffects } from './state/user/user.effects';
+import { loadUser } from './state/user/user.actions';
 
 @NgModule({
   declarations: [AppComponent, FooterComponent, HeaderComponent],
@@ -26,14 +33,27 @@ import { MomentModule } from 'ngx-moment';
         h: 14
       }
     }),
-    // pusher.com account -> angularadvancedkiev@gmat.com
+    // pusher.com account -> angularadvancedkiev@gmail.com
     PusherModule.forRoot(/** add the key see agenda doc */ null, {
       cluster: 'eu',
       forceTLS: true
     }),
     SettingsModule,
-    ArticleModule
+    ArticleModule,
+    StoreModule.forRoot(reducers, {
+      metaReducers,
+      runtimeChecks: {
+        strictStateImmutability: true,
+        strictActionImmutability: true
+      }
+    }),
+    StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
+    EffectsModule.forRoot([UserEffects])
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule {
+  constructor(store: Store<State>) {
+    store.dispatch(loadUser());
+  }
+}
