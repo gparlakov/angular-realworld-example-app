@@ -1,7 +1,6 @@
-import { Action, createReducer, on, createFeatureSelector, createSelector } from '@ngrx/store';
-import { User } from '../../core';
-import { loadUserSuccess, loadUser, loadUserFailure } from './user.actions';
-import { TypedAction, ActionType } from '@ngrx/store/src/models';
+import { createFeatureSelector, createReducer, createSelector, on } from '@ngrx/store';
+import { User } from '../../core/models/user.model';
+import { clearUser, loadUser, loadUserFailure, loadUserSuccess } from './user.actions';
 
 export const userFeatureKey = 'user';
 
@@ -23,7 +22,8 @@ export const reducer = createReducer(
     user: User.empty,
     loading: false,
     error: action.error
-  }))
+  })),
+  on(clearUser, state => ({...state, user: User.empty}))
 );
 
 
