@@ -26,6 +26,8 @@
   - if you don't want global install on any of those just use - `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder
   - TODO - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
 
+  TODO - cut a branch and then delete all the task results - spec files etc.
+
 ## 1. Basic testing
 
 Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
@@ -63,7 +65,7 @@ DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-S
 ## 3. Basic testing - Using the CLI generated tests
 
 1. Create a new component using the `ng generate component shared/notification`
-2. Run `nmg test -- --watch` (see the singe test pass)
+2. Run `npm test -- --watch` (see the singe test pass)
 3. Update the component and test
    - Copy paste the [this](./files/src/app/shared/notifications/notifications.component.ts.help) in the notifications.component.ts
    - Add injected dependency - the `NotificationService` in the providers (why?)
@@ -131,9 +133,9 @@ Note - revisit the `notification.component` tests and do the setup manually.
 
 ### 6.2. Fake async testing
 
-_Example with the `flushMicrotasks thing` article and presentation._
+_Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and presentation._
 
-1. Create a `article.component.spec.ts` file with the test infrastructure - describe, it ...
+1. Create a `article.component.spec.ts` file with the test infrastructure - `describe` with an `it` ...
 2. Create a test case `when populateComments is called and getAll comments promise resolves it should set the comments to the result`
 3. We need to provide a Promise and then do something on it's resolution(in the `then()` callback)
 4. Add a test case for `addComments` promise resolves
@@ -155,7 +157,7 @@ _Example with the `flushMicrotasks thing` article and presentation._
 
 ### 8. Forms / Observable testing
 
-1. Auth component - start test (automate?)
+1. `auth.component` - start test (automate?)
 2. Add test case for `when ngOnInit is called and url ends with 'login' should set title and authType`
 3. Add test case for `when ngOnInit is called and url ends with 'register' should set title and authType and add a 'username' control`
 4. Add test case `when submitForm called it should set the isSubmitting to true and clear out the errors`
@@ -170,7 +172,7 @@ _Example with the `flushMicrotasks thing` article and presentation._
 ### 9. Setup E2E
 
 1. Install cypress `npm i cypress -D`
-2. Run it `node_modules\.bin\cypress open`
+2. Run it `npx cypress open` or `node_modules\.bin\cypress open`
    2.1. Add to package.json scripts:
    `json scripts: { ... "cypress": "cypress", "cypress.open": "npm run cypress open" }`
 3. Add `{"baseUrl": "http://localhost:4200"}` to `cypress.json`
@@ -381,14 +383,13 @@ _Example with the `flushMicrotasks thing` article and presentation._
 ### 24. State management - Service with a Subject / Facade
 
 1. Notice the `user.service.ts`. It has methods for initiating the user, purging the auth info and exposes the current user state as an observable.
+  - This is what some call [Facade](https://medium.com/@thomasburlesonIA/ngrx-facades-better-state-management-82a04b9a1e39) others [Subject service](https://medium.com/@weswhite/angular-behaviorsubject-service-60485ef064fc)
+  - Very nice property of this abstraction level is that it's easy to start and feels natural, which is not the case with say NgRx and the whole Redux parade of actions, reducers, selectors, effects, containers and so on...
+  - Also when/if project decides to move to a more involved data management solution like Akita or NgXs or NgRx the Service can stay and work with that or beside it with little change required.
+  - can serve as a stepping stone to a more powerful state management.
+2. For now we'll do nothing but get to know the `user.service.ts` and later we'll try and revisit it
 
-- This is what some call [Facade](https://medium.com/@thomasburlesonIA/ngrx-facades-better-state-management-82a04b9a1e39) others [Subject service](https://medium.com/@weswhite/angular-behaviorsubject-service-60485ef064fc)
-- Very nice property of this abstraction level is that it's easy to start and feels natural, which is not the case with say NgRx and the whole Redux parade of actions, reducers, selectors, effects, containers and so on...
-- Also when/if project decides to move to a more involved data management solution like Akita or NgXs or NgRx the Service can stay and work with that or beside it with little change required.
-- can serve as a stepping stone to a more powerful state management.
-  // TODO 2. For now we'll do nothing but get to know the `user.service.ts` and later we'll try and revisit it
-
-### 25. NgRx Setup and replace User service
+### 25. [NgRx](https://ngrx.io/docs) Setup and replace User service
 
 Keep in mind that importing from `src/app/..` might break the build...
 
@@ -531,7 +532,7 @@ Keep in mind that importing from `src/app/..` might break the build...
 9. Review. See branch [feature/ngrx](https://github.com/gparlakov/angular-realworld-example-app/tree/feature/ngrx) for help or simply checkout
    9.1. What we did - we set up NgRx root using it's schematics. Then created a reducer, some actions, selectors, an effect to handle user load, load success and failure.
 
-### 25. Incorporate User service into NgRx flow
+### 26. Incorporate User service into NgRx flow
 
 1. We'll retouch the `user.service` and incorporate it in the NgRx flow
 2. In `user.actions.ts` add the following action
@@ -671,7 +672,13 @@ Keep in mind that importing from `src/app/..` might break the build...
     - and the `side-effects` like API calls and local storage tokens clear is now handled by effects
     - `update` and `attemptAuth` should also be delegated to the effects to keep all effects in one place (left as exercise to the reader)
 
-  6. Review. See feature/ngrx-user-service branch for help.
+6. Review. See feature/ngrx-user-service branch for help.
+
+### 27. Test the effects
+// TODO 1. The effects runner https://ngrx.io/guide/store/testing https://ngrx.io/guide/effects/testing
+
+
+
 ### N State management
 
 // TODO test suggestion out
@@ -679,7 +686,6 @@ Keep in mind that importing from `src/app/..` might break the build...
 All 3 HomeComponent, ProfileArticlesComponent, ProfileFavoritesComponent use the articles filter functionality and separately change the filter of the article.
 Home toggles between `Feed`, `Global feed` (i.e. latest) and `Tags` in the filter
 ProfileArticlesComponent, ProfileFavoritesComponent toggles between `Own` and `Favorites`.
-It seems the Article Service would not be ideal to keep the state (for now it's ok - since it's only shown in one place)
 
 What could be improved - we could store the state in the ArticlesService and only inform it that an event has happened:
 `onYourFeedPageEnter` would trigger the initial loading for that page and keep the result in memory.
@@ -688,7 +694,6 @@ What could be improved - we could store the state in the ArticlesService and onl
 `onGlobalFeedSelectPage` would store the selected page in the filter for that - so that we could come back to the same result
 ..
 
-### O. Business logic service + state-full services
 
 # Resources
 
@@ -701,16 +706,12 @@ IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2
   - if we inject it and try to mock it - it is a large API surface area i.e. a lot of mocking would be required
   - injecting the actual FormBuilder in the tests is one option
   - not injecting FormBuilder and instantiating it in the component-under-test is another
-- ~~looks like [article-list-component](./src/app/shared/article-helpers/article-list.component.ts) only keeps the favorites in its memory~~ The buttons components (app-favorite-button and [app-follow-button](./src/app/shared/buttons/follow-button.component.ts#L23)) actually send http requests
 - AbstractDate - [FooterComponent](./src/app/shared/layout/footer.component.ts) Demo how to use wrappers around the basic DOM functionalities - Date, setTimeout, requestAnimationFrame etc.
-- AuthGuardService to promise (for promise testing)
-- add a service LogService - error
-- add a service NotifyService - success/info/error
+- [Done] AuthGuardService to promise (for promise testing) used another promis
+- [Done] add a service LogService - error
+- [Done] add a service NotifyService - success/info/error. Actually called `NotificationsService`
 - talk about CI - Already doing it? AzureDevOps is great for GitHub integration.
 - Pusher - Update key in app.module https://dashboard.pusher.com/apps/858014/keys, https://www.pusher.com/docs/channels/getting_started/javascript (UPDATE KEY)
-
-# TODO
-
 - Why jump from TestBed to setup?
   - control
   - speed (no need to compile components/for services - unneeded)
