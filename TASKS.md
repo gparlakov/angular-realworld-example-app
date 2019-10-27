@@ -1,12 +1,52 @@
 # Workshop Angular
 
-## Index
+# Table of contents
+- [Day 1](#day-1)
+  * [Setup](#setup)
+  * [1. Basic testing](#1-basic-testing)
+  * [2. Basic testing - Dependencies](#2-basic-testing---dependencies)
+  * [3. Basic testing - Using the CLI generated tests](#3-basic-testing---using-the-cli-generated-tests)
+  * [4. TDD Test Driven Development](#4-tdd-test-driven-development)
+- [DAY 2](#day-2)
+  * [5. Automate unit test create/update](#5-automate-unit-test-create-update)
+  * [6. Promise testing - async and fake async](#6-promise-testing---async-and-fake-async)
+    + [6.1. Async testing](#61-async-testing)
+    + [6.2. Fake async testing](#62-fake-async-testing)
+    + [7. Observable testing](#7-observable-testing)
+    + [8. Forms / Observable testing](#8-forms---observable-testing)
+- [Day 3](#day-3)
+    + [9. Setup E2E](#9-setup-e2e)
+    + [10. E2E Tests](#10-e2e-tests)
+      - [Demo Auth component Sign Up](#demo-auth-component-sign-up)
+    + [11. End to end tests - Sign Up](#11-end-to-end-tests---sign-up)
+    + [12. Key to end to end tests - login](#12-key-to-end-to-end-tests---login)
+    + [13. Settings tests](#13-settings-tests)
+    + [14. Articles](#14-articles)
+    + [15. Comment](#15-comment)
+- [Day 4. Performance](#day-4-performance)
+      - [Bundle size](#bundle-size)
+      - [Component performance](#component-performance)
+    + [16. Bundle size](#16-bundle-size)
+    + [17. Lazy loading](#17-lazy-loading)
+    + [18. Removal of unused modules manually](#18-removal-of-unused-modules-manually)
+    + [19. Manual JS lazy module load](#19-manual-js-lazy-module-load)
+    + [20. Angular performance - trackBy](#20-angular-performance---trackby)
+    + [21. Angular performance - OnPush](#21-angular-performance---onpush)
+    + [22. Angular performance - debounce](#22-angular-performance---debounce)
+- [Day 5. State management](#day-5-state-management)
+    + [23. State management basic](#23-state-management-basic)
+    + [24. State management - Service with a Subject / Facade](#24-state-management---service-with-a-subject---facade)
+    + [25. NgRx Setup and replace User service](#25--ngrx--https---ngrxio-docs--setup-and-replace-user-service)
+    + [26. Incorporate User service into NgRx flow](#26-incorporate-user-service-into-ngrx-flow)
+    + [27. Writing tests for classes using store](#27-writing-tests-for-classes-using-store)
+    + [28. The effects test runner](#28-the-effects-test-runner)
+        * [E2E tests using store](#e2e-tests-using-store)
+    + [Bonus State management task](#bonus-state-management-task)
+- [Resources](#resources)
+- [NOTES](#notes)
 
-- [Setup](#setup)
-- [Basic](#1-basic-testing)
-  - [With Dependencies](#2-basic-testing---dependencies)
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
 
-###### TODO - generate index https://ecotrust-canada.github.io/markdown-toc/
 
 # Day 1
 
@@ -521,8 +561,8 @@ In medium and large sized apps a lot of (incidental) complexity gets added becau
   - can serve as a stepping stone to a more powerful state management.
 2. For now we'll do nothing but get to know the `user.service.ts` and later we'll try and revisit it
 
-### 25. [NgRx](https://ngrx.io/docs) Setup and replace User service
-
+### 25. NgRx Setup and replace User service
+[NgRx](https://ngrx.io/docs)
 Keep in mind that importing from `src/app/..` might break the build...
 
 1. Setup. By using the `ng add`, which in turn uses the `Schematics` capabilities we can quickly setup ngrx in our app with minimal manual steps
@@ -855,7 +895,7 @@ Testing with the store See https://ngrx.io/guide/store/testing
   - when Effect does not emit check the [side effects](files/src/app/state/user/user.effects.spec.ts.help#l46)
 
 
-##### E2E tests using store
+#### E2E tests using store
 It would be a very nice facility to our E2E tests if they had access to the Store. As it turns out that's relatively easy:
 ```ts
   // expose store when run in Cypress
