@@ -367,6 +367,15 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 4. Review ([help](files/cypress/integration/comments/comments.spec.js.help))
 
 # Day 4. Performance
+ We'll tackle performance in two aspects
+#### Bundle size
+  - for quick download - users accustomed to immediate app response
+  - don't download js for features user won't use ( < 1% will be admins - no need for admin module eagerly)
+
+#### Component performance
+  - make *ngFor great again - `trackBy`
+  - leverage the observable state and switch to `OnPush` strategy
+  - a `debounce` RxJs trick
 
 ### 16. Bundle size
 
@@ -377,29 +386,32 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
    - settings and article modules not lazy
    - all moment locales - even though we need only few of them - us/ru
-   - // TODO - think of how to move to a separate module | pusher - even though we need to ask user for permission
-   - // TODO decide if to add it (it is a bit contrived) and make it only part of one module | PDFViewer - only used in one component but part of vendor js (no vendor in prod?)
 
 5. Explore what Angular does automatically with the tree shaker
-   - Run `ng build ts --prod --common-chunk false --stats-json && webpack-bundle-analyzer dist/ts/stats.json` (notice we are building the [ts project](./projects/ts/src/app/app.component.ts))
+   - Run `ng build ts --prod --common-chunk false --stats-json && webpack-bundle-analyzer dist/ts/stats.json` (notice we are building the [tree shake (ts) demo project](./projects/ts/src/app/app.component.ts))
    - Checkout the `main`, `secondary` and `third` components and see that **only** the used components end up in the bundles, even though using the shared module and its shared components
-6. Demo what Ivy does for us in terms of performance. **Angular 8** requires **node 10** so either use Docker or install Node 10 locally
-   - for local build
+
+6. Demo what Angular 8 CLI does for us in terms of performance. (_assumes user is running angular pre 8_)
      - `ng update @angular/cli @angular/core`
      - `ng build ts --prod --common-chunk false --stats-json` (notice we build `ts` app))
      - `webpack-bundle-analyzer dist/ts/stats-es2015.json`
      - navigate to `localhost:8888`
-   - for docker demo
-     - `docker run -p 8888:8888 gparlakov/demo-ivy`
+7. **Angular 8** requires **Node 10**. If running another version either:
+   - install Node 10 locally and run the above commands
+   - run Docker node:10 container
+     - `docker run -p 8888:8888 gparlakov/demo-ivy` (_I've prepared this container to skip installing the **dependencies** - feel free to run the official node:10 image_)
      - navigate to `localhost:8888`
-   - using nvm (node version manger)
+
+   - using NVM (node version manger)
      - install nvm ([linux/MacOs](https://github.com/nvm-sh/nvm)) ([windows](https://github.com/coreybutler/nvm-windows))
      - run `nvm install 10.13.0`
      - run `nvm use 10.13.0`
-     - run the scripts
+     - run the commands
         - `ng update @angular/cli @angular/core`
         - `ng build ts --prod --common-chunk false --stats-json` (notice we build `ts` app))
         - `webpack-bundle-analyzer dist/ts/stats-es2015.json`
+8. Notice how much has changed
+  - legacy browsers get their own build with larger polyfill js and modern ones, which do not need all those polyfills get the smaller bundle - neat
 
 
 ### 17. Lazy loading
@@ -480,23 +492,24 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 # Day 5. State management
 
+In medium and large sized apps a lot of (incidental) complexity gets added because of shared state. Let's look at a few points demonstrating different approaches to state management.
+
 ### 23. State management basic
 
 1. Go to https://angular.io/generated/live-examples/getting-started/stackblitz.html and get to know the app
 2. Implement the following feature
    - show the number of items next to the `Checkout` button <img src ="./files/button.png" width="100" alt="![huhh! the button.png is missing]"></img>
 3. Steps:
-
    - notice the state being kept in the `CartService`
    - notice the button being part of the `TopBarComponent`
    - inject the `CartService` in the `TopBarComponent`
    - populate a `itemsCount` property with `cartService.getItems().length`
    - notice that no changes are happening - why is that?
    - implement a `ngDoCheck` method (when does it get called?)
-   - inside re- populate a `itemsCount` property with `cartService.getItems().length` (i.e. `this.itemsCount = this.cartService.getItems().lenght`)
+   - inside re- populate a `itemsCount` property with `cartService.getItems().length` (i.e. `this.itemsCount = this.cartService.getItems().length`)
 
 4. Review.
-   - For help see [final result](https://stackblitz.com/edit/angular-data-simple-angular-advanced-workshop-kiev?file=src/app/top-bar/top-bar.component.ts)
+5. For help see [final result](https://stackblitz.com/edit/angular-data-simple-angular-advanced-workshop-kiev?file=src/app/top-bar/top-bar.component.ts)
 
 ### 24. State management - Service with a Subject / Facade
 
@@ -516,7 +529,7 @@ Keep in mind that importing from `src/app/..` might break the build...
    - `ng add @ngrx/store --statePath state` - the base of the NgRx Redux implementation - the store, reducer, action etc types and helpers
    - `ng add @ngrx/store-devtools` - instrument for use with the Redux DevTools Extensions http://extension.remotedev.io/
    - `ng add @ngrx/effects` - add the effects part of NgRx - handles side effects like persist etc.
-   - IMPORTANT verify installed versions of @ngrx libs are 8.4.0 (or above) in package.json
+   - IMPORTANT verify installed versions of @ngrx libs are **8.4.0** (or above) in package.json. See help branch from the last point of this part (25.10)
 2. User state (reducer)
 
    - `ng g @ngrx/schematics:reducer state/user/user -c` - creates the user reducer under state/user folder (we'll keep the state separated by feature rather than by type i.e. state/user and state/articles vs state/reducers/user.reducer.ts and state/reducers/article.ts)
@@ -647,10 +660,20 @@ Keep in mind that importing from `src/app/..` might break the build...
   ```
 - verify user email is still visible
 
-9. Review. See branch [feature/ngrx](https://github.com/gparlakov/angular-realworld-example-app/tree/feature/ngrx) for help or simply checkout
-   9.1. What we did - we set up NgRx root using it's schematics. Then created a reducer, some actions, selectors, an effect to handle user load, load success and failure.
+9. Review.
+  9.1. What we did
+    - we set up NgRx root using it's schematics.
+    - then created a reducer, some actions, selectors, an effect to handle user load, load success and failure
+    - then replaced the current `user` data management with the store, action and effects
+  9.2. What we accomplished
+    - lay the foundations of using the Redux pattern in our app
+    - began our journey in the NgRx land
+
+10. See branch [feature/ngrx](https://github.com/gparlakov/angular-realworld-example-app/tree/feature/ngrx) for help or simply checkout
 
 ### 26. Incorporate User service into NgRx flow
+
+This point will demo how to incorporate or bring along services implemented using the Subject Service/Facade patterns mentioned above
 
 1. We'll retouch the `user.service` and incorporate it in the NgRx flow
 2. In `user.actions.ts` add the following action
@@ -793,14 +816,13 @@ Keep in mind that importing from `src/app/..` might break the build...
 6. Review. See feature/ngrx-user-service branch for help.
 
 ### 27. Test the effects
-// TODO 1. The effects runner https://ngrx.io/guide/store/testing https://ngrx.io/guide/effects/testing
+// TODO 1. The effects runner  https://ngrx.io/guide/effects/testing
+// store testing https://ngrx.io/guide/store/testing
 // TODO mention e2e tests using exposed store
 
 
 
-### N State management
-
-// TODO test suggestion out
+### Bonus State management task
 
 All 3 HomeComponent, ProfileArticlesComponent, ProfileFavoritesComponent use the articles filter functionality and separately change the filter of the article.
 Home toggles between `Feed`, `Global feed` (i.e. latest) and `Tags` in the filter
