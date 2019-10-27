@@ -25,6 +25,7 @@
   ```
   - if you don't want global install on any of those just use - `ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder (for version of angular less than 6 `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`)
   - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
+- [Optional] debugging Jest tests from inside VS Code [article](https://medium.com/@gparlakov/debug-jest-tests-from-vs-code-bc691c949b07) and [Recipe from Microsoft](https://github.com/microsoft/vscode-recipes/tree/master/debugging-jest-tests)
 
 ## 1. Basic testing
 
@@ -815,10 +816,54 @@ This point will demo how to incorporate or bring along services implemented usin
 
 6. Review. See feature/ngrx-user-service branch for help.
 
-### 27. Test the effects
-// TODO 1. The effects runner  https://ngrx.io/guide/effects/testing
-// store testing https://ngrx.io/guide/store/testing
-// TODO mention e2e tests using exposed store
+### 27. Writing tests for classes using store
+Testing with the store See https://ngrx.io/guide/store/testing
+  - peculiarity with the store and using setup method: In order to use `provideMockStore` from the testing tools we need to create a module (TestBed.configureTestingModule).
+      ```ts
+      TestBed.configureTestingModule({ // create the Module
+        providers: [ // with providers
+          provideMockStore<State>({ // instantiate the mock store in one line
+            initialState: {
+              [userFeatureKey]: { user: User.empty, loading: false }
+            }
+          })
+        ]
+      });
+      const store: MockStore<State> = TestBed.get(Store); // now we can get the Store (in this case a MockStore) and provide that in our setup methods
+      ```
+  - when testing actions we can use the `scannedActions` property of the mock store
+  - See [help](files/src/app/core/services/user.service.ngrx.spec.ts.help)
+    - [store Test](files\src\app\core\services\user.service.ngrx.spec.ts.help#l19)
+    - [actions test](files\src\app\core\services\user.service.ngrx.spec.ts.help#l45)
+
+### 28. The effects test runner
+- See https://ngrx.io/guide/effects/testing
+- Testing effects is very similar to testing other instances of classes exposing an observable property.
+- We need to
+  - provide an Observable<Action> (ReplaySubject<Action> seems like a good idea)
+      ```ts
+      const actions$ = new ReplaySubject<Action>(1);
+      ```
+  - provide other dependencies if required
+  - subscribe to the effect we are testing
+  - emit an action via the Observable<Action> we control
+  - watch the results
+  - watch side effects for Effects that do not dispatch
+- For an example see [help](files/src/app/state/user/user.effects.spec.ts.help)
+  - the action is a [ReplaySubject](files/src/app/state/user/user.effects.spec.ts.help#l51)
+  - emit an [action](files/src/app/state/user/user.effects.spec.ts.help#l17) or [action example two](files/src/app/state/user/user.effects.spec.ts.help#l31)
+  - when Effect does not emit check the [side effects](files/src/app/state/user/user.effects.spec.ts.help#l46)
+
+
+##### E2E tests using store
+It would be a very nice facility to our E2E tests if they had access to the Store. As it turns out that's relatively easy:
+```ts
+  // expose store when run in Cypress
+  if ("Cypress" in window) {
+    (window as any).__store__ = store;
+  }
+```
+Then later in the tests we can now leverage the store and dispatch actions or get the state.
 
 
 
@@ -839,7 +884,9 @@ What could be improved - we could store the state in the ArticlesService and onl
 # Resources
 
 - IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
-- performance great talk https://www.youtube.com/watch?v=Tlmx1PbP8Qw
+- great performance talk https://www.youtube.com/watch?v=Tlmx1PbP8Qw
+- https://ngrx.io/docs
+- https://angular.io/docs
 
 # NOTES
 
