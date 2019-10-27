@@ -42,6 +42,7 @@
     + [28. The effects test runner](#28-the-effects-test-runner)
         * [E2E tests using store](#e2e-tests-using-store)
     + [Bonus State management task](#bonus-state-management-task)
+    + [Use the Chrome Performance tool](#use-the-chrome-performance-tool)
 - [Resources](#resources)
 - [NOTES](#notes)
 
@@ -203,6 +204,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
    - we added injected dependency - the `NotificationService` to showcase testing components with dependencies
 4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help))
 5. Review
+6. Don't forget to add the component in the `app.component.html` (just uncomment it)
 
 ## 4. TDD Test Driven Development
 
@@ -503,7 +505,7 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 5. Review (see [help](files/src/app/core/services/pusher.service.ts.help))
 
 ### 20. Angular performance - trackBy
-
+See Chrome performance [below](#use-the-chrome-performance-tool)
 1. Notice the /admin route of the app. Interact with the controls on the left (width, height, by) and notice the updating count of all components. That's because we keep changing the referenced objects filtered and updated by the [admin-article.service](src/app/admin/admin-article.service.ts#l23) with the input provided in the admin-article-visualize-control.component (i.e. the aforementioned controls - width, height, by).
 2. Add a `articleSlug` property in the `admin-article-list.component`
 3. Let it be of type `TrackByFunction<AdminArticle>`
@@ -908,6 +910,16 @@ Then later in the tests we can now leverage the store and dispatch actions or ge
 
 
 ### Bonus State management task
+
+### Use the Chrome Performance tool
+  - navigate to `/admin`
+  - open chrome dev tools - performance panel
+  - click the `Record` button on the top-left (or Ctrl + E)
+  - interact with the buttons
+  - click the `Stop` button
+  - notice on the Main thread the red-cornered event handlers (when hovered they say 'Warning: Event handler took xxx ms')
+  - if selected and then on the bottom tabs select Bottom-Up and order by 'Self Time' we can see the reason of our sluggish UI
+  - on the far right there's a link to the exact place in the file where the method is located (or the TS by source-map!)
 
 All 3 HomeComponent, ProfileArticlesComponent, ProfileFavoritesComponent use the articles filter functionality and separately change the filter of the article.
 Home toggles between `Feed`, `Global feed` (i.e. latest) and `Tags` in the filter

@@ -4,11 +4,14 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
-import { ArticleListComponent, ArticleMetaComponent, ArticlePreviewComponent } from './article-helpers';
+import {
+  ArticleListComponent,
+  ArticleMetaComponent,
+  ArticlePreviewComponent
+} from './article-helpers';
 import { FavoriteButtonComponent, FollowButtonComponent } from './buttons';
 import { ListErrorsComponent } from './list-errors.component';
 import { ShowAuthedDirective } from './show-authed.directive';
-import { NotificationsComponent } from './notifications/notifications.component';
 import { MomentModule } from 'ngx-moment';
 import { CounterComponent } from './counter/counter.component';
 
@@ -29,7 +32,6 @@ import { CounterComponent } from './counter/counter.component';
     FollowButtonComponent,
     ListErrorsComponent,
     ShowAuthedDirective,
-    NotificationsComponent,
     CounterComponent
   ],
   exports: [
@@ -45,7 +47,6 @@ import { CounterComponent } from './counter/counter.component';
     ListErrorsComponent,
     RouterModule,
     ShowAuthedDirective,
-    NotificationsComponent,
     CounterComponent
   ]
 })
