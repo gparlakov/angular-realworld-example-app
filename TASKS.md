@@ -23,26 +23,64 @@
   npm i -g @angular/cli @briebug/jest-schematic
   ng g @briebug/jest-schematic:add
   ```
-  - if you don't want global install on any of those just use - `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder
-  - TODO - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
-
-  TODO - cut a branch and then delete all the task results - spec files etc.
+  - if you don't want global install on any of those just use - `ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder (for version of angular less than 6 `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`)
+  - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
 
 ## 1. Basic testing
 
 Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
 
-1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts
+1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts with the following contents:
+    ```ts
+    import { ArticlePreviewComponent } from './article-preview.component';
+    import { Article } from '../../core';
+
+    describe('ArticlePreviewComponent', () => {
+
+    });
+    ```
 2.  Construct the component in a test case and verify it actually instantiates successfully
     - no dependencies
     - simple logic
+    ```ts
+    it('should instantiate', () => {
+      const c = new ArticlePreviewComponent();
+
+      expect(c).toBeDefined();
+    });
+    ```
 3.  Test the `toggleFavorite` with argument `true`
+    ```ts
+      it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+        const c = new ArticlePreviewComponent();
+        c.article = { favoritesCount: 0 } as Article;
+
+        c.onToggleFavorite(true);
+        expect(c.article.favoritesCount).toBe(1);
+        expect(c.article.favorited).toBe(true);
+      });
+    ```
 4.  Test the `toggleFavorite` with argument `false`
-5.  Review
+    ```ts
+    it('when toggleFavorite called with false should decrease favoritesCount and toggle favorited to false', () => {
+      const c = new ArticlePreviewComponent();
+      c.article = { favoritesCount: 1, favorited: true } as Article;
+
+      c.onToggleFavorite(false);
+      expect(c.article.favoritesCount).toBe(0);
+      expect(c.article.favorited).toBe(false);
+    });
+    ```
+5.  Review. See [article-preview.component](files/src/app/shared/article-helpers/article-preview.component.spec.ts.help) for help
+
+
 
 ## 2. Basic testing - Dependencies
 
-DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-Snippets) to skip some of the code boilerplate
+0. DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-Snippets) to skip some of the code boilerplate
+  - try using snippets like `t-describe-it` for the boilerplate
+  - IntelliJ plugin for snippets (looks like it supports some snippets out of the box according to this [article](https://jaxenter.com/angular-2-intellij-netbeans-eclipse-128461.html)) https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+
 
 1. Create the test file for the [AppComponent](./src/app/app.component.ts)
 2. Test cases
@@ -60,15 +98,68 @@ DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-S
 5. Review
 6. See [help](./files/src/app/app.component.spec.ts.help)
 
-// Notes: Talk a bit about implementation details in tests
+Did you instantiate the class-under-test in the test? Or some of the dependencies? What if there are many tests and the shape of some of the classes change? It might be the case that we are exposing implementation details in the tests...
 
 ## 3. Basic testing - Using the CLI generated tests
 
 1. Create a new component using the `ng generate component shared/notification`
+   - this should generate 4 files - component, spec, html and css file
+   - in the spec there is a scaffolded simple test case
 2. Run `npm test -- --watch` (see the singe test pass)
-3. Update the component and test
-   - Copy paste the [this](./files/src/app/shared/notifications/notifications.component.ts.help) in the notifications.component.ts
-   - Add injected dependency - the `NotificationService` in the providers (why?)
+3. Update the component
+   - Update the content of the notifications.component.ts file with [contents from this file](./files/src/app/shared/notifications/notifications.component.ts.help)
+      ```ts
+      import { Component, OnInit } from '@angular/core';
+      import { NotificationsService } from '../../core/services/notifications.service';
+      import { NotificationModel } from '../../core/models/notification-model';
+      import { Observable } from 'rxjs';
+
+      @Component({
+        selector: 'app-notifications',
+        template: `
+          <p *ngIf="success" class="notification notification-success">
+            {{ success }}
+          </p>
+
+          <p *ngIf="error" class="notification notification-error">
+            {{ error }}
+          </p>
+        `,
+        styles: [
+          `
+            .notification {
+              position: fixed;
+              bottom: 0;
+              right: 15px;
+            }
+
+            .notification-success {
+              border: 1px solid green;
+            }
+
+            .notification-error {
+              border: 1px solid magenta;
+            }
+          `
+        ]
+      })
+      export class NotificationsComponent implements OnInit {
+        success: string;
+        error: string;
+        constructor(private notifications: NotificationsService) {}
+
+        ngOnInit() {
+          this.notifications.message$.subscribe(m => {
+            if (m.type === 'success') {
+              this.success = m.text;
+            } else {
+              this.error = m.text;
+            }
+          });
+        }
+      }
+      ```
+   - we added injected dependency - the `NotificationService` to showcase testing components with dependencies
 4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help))
 5. Review
 
@@ -93,7 +184,10 @@ DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-S
 
 ## 5. Automate unit test create/update
 
-Note - revisit the `notification.component` tests and do the setup manually.
+0. Demo - `setup` function create manually from scratch
+   - `setup` houses the instantiation of class-under-test and its dependencies (otherwise done by Angular)
+   - also it helps if test conditions are placed in the `builder`
+   - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
 
 1. Install `npm install --save-dev scuri` (or short `npm i -D scuri`)
 2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts`
@@ -127,13 +221,13 @@ Note - revisit the `notification.component` tests and do the setup manually.
 
 1. Create a `profile-resolver.service.spec.ts` (try using SCuri `ng g scuri:spec profile\profile-resolver.service.ts`)
 2. Create a test case for `when resolve is called and the profileService.get rejects should call router.navigate("/")`
-3. Use `async` to wrap it
+3. Use `async` to wrap it (`import { async } from '@angular/core/testing';`)
 4. Review
 5. See [file](files/src/app/profile/profile-resolver.service.spec.ts.help) for help
 
 ### 6.2. Fake async testing
 
-_Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and presentation._
+_Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and [presentation](https://docs.google.com/presentation/d/1_5-p0t_FtKYDKJgqWZYNyJ3NsR2U8J5kY2ZHPmare1w/edit?usp=sharing)._
 
 1. Create a `article.component.spec.ts` file with the test infrastructure - `describe` with an `it` ...
 2. Create a test case `when populateComments is called and getAll comments promise resolves it should set the comments to the result`
@@ -141,7 +235,8 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 4. Add a test case for `addComments` promise resolves
 5. Add a test case for `addComments` promise rejects
 6. Add a test case for `deleteComment` success
-7. See [help](./files/src/app/article/article.component.spec.ts.help) file
+7. Review
+8. See [help](./files/src/app/article/article.component.spec.ts.help) file
 
 ### 7. Observable testing
 
@@ -153,7 +248,8 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 6. Add test case `when attemptAuth called and POST succeeds should emit "success" and currentUser should also emit`
 7. Add test case `when attemptAuth called and POST fails should emit the error and current user should not emit`
 8. [Optional] Test the rest of the methods - `update`, `purgeAuth`(is this already tested?) and `getCurrentUser`
-9. Review and See [help](./files/src/app/core/services/user.service.ts.help)
+9. Review.
+10. See [help](files/src/app/core/services/user.service.spec.ts.help)
 
 ### 8. Forms / Observable testing
 
@@ -179,12 +275,15 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 4. Add `"allowJs": true, "checkJs": true` to tsconfig.json to allow ts to check our js test files
 5. [Optional] hide the examples from our dashboard by adding `"ignoreTestFiles": "**/examples/*.*"` to `cypress.json`
 
-### 10. Setup Smoke tests?
+### 10. E2E Tests
 
-### Demo Auth component Sign Up
+#### Demo Auth component Sign Up
 
-1. Demo anonymous user - should see the banner and sign up/sign in buttons
-2. Demo sign-up tests [demo help](./files/cypress/integration/sign-up/sign-up.spec.js.help)
+1. Demo running tests
+2. Demo `examples` and how they are excluded from general runs
+3. Demo anonymous user - should see the banner and sign up/sign in buttons
+4. Demo sign-up tests [demo help](./files/cypress/integration/sign-up/sign-up.spec.js.help) \
+5. Mention the selectors, `data-testid`. Classes, ids and attributes change for UI reasons so let `data-testid` be the constant that we can anchor out tests at.
 
 ### 11. End to end tests - Sign Up
 
@@ -197,17 +296,22 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 ### 12. Key to end to end tests - login
 
 1. Create the `login` helper command - [command](./files/cypress/support/commands.js.help)
-2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json`
-3. Some intellisense help Add a `tsconfig.json` in `./cypress` with the following content and an `./cypress/support/index.d.ts`
+2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json` (there is a `cypress.json.help` file in `/files`)
+3. For intellisense help add a `tsconfig.json` in `./cypress` with the following content:
 
    ```json
    {
-     "extends": "../tsconfig.json",
-     "compilerOptions": { "baseUrl": "." },
-     "include": ["./support/index.d.ts"]
+      "compilerOptions": {
+        "baseUrl": ".",
+        "typeRoots": ["../node_modules/cypress/types"],
+        "types": ["index"],
+        "checkJs": true,
+        "allowJs": true
+      },
+      "include": ["./support/index.d.ts"]
    }
    ```
-
+   - and a `./cypress/support/index.d.ts`
    ```ts
    /// <reference types="cypress" />
 
@@ -223,12 +327,16 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
      }
    }
    ```
+4. Review.
+5. See [help](files/cypress/support/commands.js.help)
 
 ### 13. Settings tests
 
+0. Begin with adding a `register` command - see [help](files/cypress/support/commands.v2.js.help)
+
 1. Create the `./cypress/integration/settings/settings.spec.js`
    ```js
-   context('Settings', () => {
+    context('Settings', () => {
      /**  @type User */
      let user;
      beforeEach(() => {
@@ -241,7 +349,7 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 3. Add test case `should have the user name and email pre-filled`
 4. Add test case `should log out successfully`
 5. Review
-6. See [help](files/cypress/integration/settings/sign-up.spec.js.help)
+6. See [help](files/cypress/integration/settings/settings.spec.js.help)
 
 ### 14. Articles
 
@@ -259,6 +367,15 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 4. Review ([help](files/cypress/integration/comments/comments.spec.js.help))
 
 # Day 4. Performance
+ We'll tackle performance in two aspects
+#### Bundle size
+  - for quick download - users accustomed to immediate app response
+  - don't download js for features user won't use ( < 1% will be admins - no need for admin module eagerly)
+
+#### Component performance
+  - make *ngFor great again - `trackBy`
+  - leverage the observable state and switch to `OnPush` strategy
+  - a `debounce` RxJs trick
 
 ### 16. Bundle size
 
@@ -269,21 +386,33 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 
    - settings and article modules not lazy
    - all moment locales - even though we need only few of them - us/ru
-   - // TODO - think of how to move to a separate module | pusher - even though we need to ask user for permission
-   - // TODO decide if to add it (it is a bit contrived) and make it only part of one module | PDFViewer - only used in one component but part of vendor js (no vendor in prod?)
 
 5. Explore what Angular does automatically with the tree shaker
-   - Run `ng build ts --prod --common-chunk false --stats-json && webpack-bundle-analyzer dist/ts/stats.json` (notice we are building the [ts project](./projects/ts/src/app/app.component.ts))
+   - Run `ng build ts --prod --common-chunk false --stats-json && webpack-bundle-analyzer dist/ts/stats.json` (notice we are building the [tree shake (ts) demo project](./projects/ts/src/app/app.component.ts))
    - Checkout the `main`, `secondary` and `third` components and see that **only** the used components end up in the bundles, even though using the shared module and its shared components
-6. Demo what Ivy does for us in terms of performance. **Angular 8** requires **node 10** so either use Docker or install Node 10 locally
-   - for local build
+
+6. Demo what Angular 8 CLI does for us in terms of performance. (_assumes user is running angular pre 8_)
      - `ng update @angular/cli @angular/core`
      - `ng build ts --prod --common-chunk false --stats-json` (notice we build `ts` app))
      - `webpack-bundle-analyzer dist/ts/stats-es2015.json`
      - navigate to `localhost:8888`
-   - for docker demo
-     - `docker run -p 8888:8888 gparlakov/demo-ivy`
+7. **Angular 8** requires **Node 10**. If running another version either:
+   - install Node 10 locally and run the above commands
+   - run Docker node:10 container
+     - `docker run -p 8888:8888 gparlakov/demo-ivy` (_I've prepared this container to skip installing the **dependencies** - feel free to run the official node:10 image_)
      - navigate to `localhost:8888`
+
+   - using NVM (node version manger)
+     - install nvm ([linux/MacOs](https://github.com/nvm-sh/nvm)) ([windows](https://github.com/coreybutler/nvm-windows))
+     - run `nvm install 10.13.0`
+     - run `nvm use 10.13.0`
+     - run the commands
+        - `ng update @angular/cli @angular/core`
+        - `ng build ts --prod --common-chunk false --stats-json` (notice we build `ts` app))
+        - `webpack-bundle-analyzer dist/ts/stats-es2015.json`
+8. Notice how much has changed
+  - legacy browsers get their own build with larger polyfill js and modern ones, which do not need all those polyfills get the smaller bundle - neat
+
 
 ### 17. Lazy loading
 
@@ -293,7 +422,8 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 2. Make Settings module lazy - same steps as above
 3. Note the bundles sizes change (run steps 2. and 3.)
    `ng build --prod --stats-json && webpack-bundle-analyzer dist/stats.json`
-4. Review (see [app-routing.module.ts](files/src/app/app-routing.module.ts.help) and [app.module.ts](files/src/app/app.module.ts.help))
+4. Review
+5. See [app-routing.module.ts](files/src/app/app-routing.module.ts.help) and [app.module.ts](files/src/app/app.module.ts.help)
 
 ### 18. Removal of unused modules manually
 
@@ -362,23 +492,24 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 
 # Day 5. State management
 
+In medium and large sized apps a lot of (incidental) complexity gets added because of shared state. Let's look at a few points demonstrating different approaches to state management.
+
 ### 23. State management basic
 
 1. Go to https://angular.io/generated/live-examples/getting-started/stackblitz.html and get to know the app
 2. Implement the following feature
    - show the number of items next to the `Checkout` button <img src ="./files/button.png" width="100" alt="![huhh! the button.png is missing]"></img>
 3. Steps:
-
    - notice the state being kept in the `CartService`
    - notice the button being part of the `TopBarComponent`
    - inject the `CartService` in the `TopBarComponent`
    - populate a `itemsCount` property with `cartService.getItems().length`
    - notice that no changes are happening - why is that?
    - implement a `ngDoCheck` method (when does it get called?)
-   - inside re- populate a `itemsCount` property with `cartService.getItems().length` (i.e. `this.itemsCount = this.cartService.getItems().lenght`)
+   - inside re- populate a `itemsCount` property with `cartService.getItems().length` (i.e. `this.itemsCount = this.cartService.getItems().length`)
 
 4. Review.
-   - For help see [final result](https://stackblitz.com/edit/angular-data-simple-angular-advanced-workshop-kiev?file=src/app/top-bar/top-bar.component.ts)
+5. For help see [final result](https://stackblitz.com/edit/angular-data-simple-angular-advanced-workshop-kiev?file=src/app/top-bar/top-bar.component.ts)
 
 ### 24. State management - Service with a Subject / Facade
 
@@ -398,7 +529,7 @@ Keep in mind that importing from `src/app/..` might break the build...
    - `ng add @ngrx/store --statePath state` - the base of the NgRx Redux implementation - the store, reducer, action etc types and helpers
    - `ng add @ngrx/store-devtools` - instrument for use with the Redux DevTools Extensions http://extension.remotedev.io/
    - `ng add @ngrx/effects` - add the effects part of NgRx - handles side effects like persist etc.
-   - IMPORTANT verify installed versions of @ngrx libs are 8.4.0 (or above) in package.json
+   - IMPORTANT verify installed versions of @ngrx libs are **8.4.0** (or above) in package.json. See help branch from the last point of this part (25.10)
 2. User state (reducer)
 
    - `ng g @ngrx/schematics:reducer state/user/user -c` - creates the user reducer under state/user folder (we'll keep the state separated by feature rather than by type i.e. state/user and state/articles vs state/reducers/user.reducer.ts and state/reducers/article.ts)
@@ -529,10 +660,20 @@ Keep in mind that importing from `src/app/..` might break the build...
   ```
 - verify user email is still visible
 
-9. Review. See branch [feature/ngrx](https://github.com/gparlakov/angular-realworld-example-app/tree/feature/ngrx) for help or simply checkout
-   9.1. What we did - we set up NgRx root using it's schematics. Then created a reducer, some actions, selectors, an effect to handle user load, load success and failure.
+9. Review.
+  9.1. What we did
+    - we set up NgRx root using it's schematics.
+    - then created a reducer, some actions, selectors, an effect to handle user load, load success and failure
+    - then replaced the current `user` data management with the store, action and effects
+  9.2. What we accomplished
+    - lay the foundations of using the Redux pattern in our app
+    - began our journey in the NgRx land
+
+10. See branch [feature/ngrx](https://github.com/gparlakov/angular-realworld-example-app/tree/feature/ngrx) for help or simply checkout
 
 ### 26. Incorporate User service into NgRx flow
+
+This point will demo how to incorporate or bring along services implemented using the Subject Service/Facade patterns mentioned above
 
 1. We'll retouch the `user.service` and incorporate it in the NgRx flow
 2. In `user.actions.ts` add the following action
@@ -675,13 +816,13 @@ Keep in mind that importing from `src/app/..` might break the build...
 6. Review. See feature/ngrx-user-service branch for help.
 
 ### 27. Test the effects
-// TODO 1. The effects runner https://ngrx.io/guide/store/testing https://ngrx.io/guide/effects/testing
+// TODO 1. The effects runner  https://ngrx.io/guide/effects/testing
+// store testing https://ngrx.io/guide/store/testing
+// TODO mention e2e tests using exposed store
 
 
 
-### N State management
-
-// TODO test suggestion out
+### Bonus State management task
 
 All 3 HomeComponent, ProfileArticlesComponent, ProfileFavoritesComponent use the articles filter functionality and separately change the filter of the article.
 Home toggles between `Feed`, `Global feed` (i.e. latest) and `Tags` in the filter
@@ -697,7 +838,8 @@ What could be improved - we could store the state in the ArticlesService and onl
 
 # Resources
 
-IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+- IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+- performance great talk https://www.youtube.com/watch?v=Tlmx1PbP8Qw
 
 # NOTES
 
