@@ -184,7 +184,10 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 5. Automate unit test create/update
 
-Note - revisit the `notification.component` tests and do the setup manually.
+0. Demo - `setup` function create manually from scratch
+   - `setup` houses the instantiation of class-under-test and its dependencies (otherwise done by Angular)
+   - also it helps if test conditions are placed in the `builder`
+   - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
 
 1. Install `npm install --save-dev scuri` (or short `npm i -D scuri`)
 2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts`
@@ -218,13 +221,13 @@ Note - revisit the `notification.component` tests and do the setup manually.
 
 1. Create a `profile-resolver.service.spec.ts` (try using SCuri `ng g scuri:spec profile\profile-resolver.service.ts`)
 2. Create a test case for `when resolve is called and the profileService.get rejects should call router.navigate("/")`
-3. Use `async` to wrap it
+3. Use `async` to wrap it (`import { async } from '@angular/core/testing';`)
 4. Review
 5. See [file](files/src/app/profile/profile-resolver.service.spec.ts.help) for help
 
 ### 6.2. Fake async testing
 
-_Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and presentation._
+_Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and [presentation](https://docs.google.com/presentation/d/1_5-p0t_FtKYDKJgqWZYNyJ3NsR2U8J5kY2ZHPmare1w/edit?usp=sharing)._
 
 1. Create a `article.component.spec.ts` file with the test infrastructure - `describe` with an `it` ...
 2. Create a test case `when populateComments is called and getAll comments promise resolves it should set the comments to the result`
@@ -244,7 +247,7 @@ _Example with the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was
 6. Add test case `when attemptAuth called and POST succeeds should emit "success" and currentUser should also emit`
 7. Add test case `when attemptAuth called and POST fails should emit the error and current user should not emit`
 8. [Optional] Test the rest of the methods - `update`, `purgeAuth`(is this already tested?) and `getCurrentUser`
-9. Review and See [help](./files/src/app/core/services/user.service.ts.help)
+9. Review and See [help](files/src/app/core/services/user.service.spec.ts.help)
 
 ### 8. Forms / Observable testing
 
