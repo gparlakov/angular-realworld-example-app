@@ -838,7 +838,8 @@ What could be improved - we could store the state in the ArticlesService and onl
 
 # Resources
 
-IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+- IntelliJ plugin for snippets https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+- performance great talk https://www.youtube.com/watch?v=Tlmx1PbP8Qw
 
 # NOTES
 
