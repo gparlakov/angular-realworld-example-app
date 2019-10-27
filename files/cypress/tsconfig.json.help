@@ -1,5 +1,9 @@
 {
-  "extends": "../tsconfig.json",
-  "compilerOptions": { "baseUrl": "." },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "typeRoots": ["../node_modules/cypress/types"],
+    "checkJs": true,
+    "allowJs": true
+  },
   "include": ["./support/index.d.ts"]
 }

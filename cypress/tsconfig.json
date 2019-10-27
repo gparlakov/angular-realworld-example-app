@@ -2,9 +2,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "typeRoots": ["../node_modules/cypress/types"],
-    "types": ["index"],
     "checkJs": true,
     "allowJs": true
   },
-  "include": ["./support/index.d.ts", "../node_modules/cypress/types/index.d.ts"]
+  "include": ["./support/index.d.ts"]
 }

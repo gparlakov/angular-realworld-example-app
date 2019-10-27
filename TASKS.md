@@ -235,7 +235,8 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 4. Add a test case for `addComments` promise resolves
 5. Add a test case for `addComments` promise rejects
 6. Add a test case for `deleteComment` success
-7. See [help](./files/src/app/article/article.component.spec.ts.help) file
+7. Review
+8. See [help](./files/src/app/article/article.component.spec.ts.help) file
 
 ### 7. Observable testing
 
@@ -247,7 +248,8 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 6. Add test case `when attemptAuth called and POST succeeds should emit "success" and currentUser should also emit`
 7. Add test case `when attemptAuth called and POST fails should emit the error and current user should not emit`
 8. [Optional] Test the rest of the methods - `update`, `purgeAuth`(is this already tested?) and `getCurrentUser`
-9. Review and See [help](files/src/app/core/services/user.service.spec.ts.help)
+9. Review.
+10. See [help](files/src/app/core/services/user.service.spec.ts.help)
 
 ### 8. Forms / Observable testing
 
@@ -273,12 +275,15 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 4. Add `"allowJs": true, "checkJs": true` to tsconfig.json to allow ts to check our js test files
 5. [Optional] hide the examples from our dashboard by adding `"ignoreTestFiles": "**/examples/*.*"` to `cypress.json`
 
-### 10. Setup Smoke tests?
+### 10. E2E Tests
 
-### Demo Auth component Sign Up
+#### Demo Auth component Sign Up
 
-1. Demo anonymous user - should see the banner and sign up/sign in buttons
-2. Demo sign-up tests [demo help](./files/cypress/integration/sign-up/sign-up.spec.js.help)
+1. Demo running tests
+2. Demo `examples` and how they are excluded from general runs
+3. Demo anonymous user - should see the banner and sign up/sign in buttons
+4. Demo sign-up tests [demo help](./files/cypress/integration/sign-up/sign-up.spec.js.help) \
+5. Mention the selectors, `data-testid`. Classes, ids and attributes change for UI reasons so let `data-testid` be the constant that we can anchor out tests at.
 
 ### 11. End to end tests - Sign Up
 
@@ -291,17 +296,22 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 ### 12. Key to end to end tests - login
 
 1. Create the `login` helper command - [command](./files/cypress/support/commands.js.help)
-2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json`
-3. Some intellisense help Add a `tsconfig.json` in `./cypress` with the following content and an `./cypress/support/index.d.ts`
+2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json` (there is a `cypress.json.help` file in `/files`)
+3. For intellisense help add a `tsconfig.json` in `./cypress` with the following content:
 
    ```json
    {
-     "extends": "../tsconfig.json",
-     "compilerOptions": { "baseUrl": "." },
-     "include": ["./support/index.d.ts"]
+      "compilerOptions": {
+        "baseUrl": ".",
+        "typeRoots": ["../node_modules/cypress/types"],
+        "types": ["index"],
+        "checkJs": true,
+        "allowJs": true
+      },
+      "include": ["./support/index.d.ts"]
    }
    ```
-
+   - and a `./cypress/support/index.d.ts`
    ```ts
    /// <reference types="cypress" />
 
@@ -317,12 +327,16 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
      }
    }
    ```
+4. Review.
+5. See [help](files/cypress/support/commands.js.help)
 
 ### 13. Settings tests
 
+0. Begin with adding a `register` command - see [help](files/cypress/support/commands.v2.js.help)
+
 1. Create the `./cypress/integration/settings/settings.spec.js`
    ```js
-   context('Settings', () => {
+    context('Settings', () => {
      /**  @type User */
      let user;
      beforeEach(() => {
@@ -335,7 +349,7 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 3. Add test case `should have the user name and email pre-filled`
 4. Add test case `should log out successfully`
 5. Review
-6. See [help](files/cypress/integration/settings/sign-up.spec.js.help)
+6. See [help](files/cypress/integration/settings/settings.spec.js.help)
 
 ### 14. Articles
 
@@ -396,7 +410,8 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 2. Make Settings module lazy - same steps as above
 3. Note the bundles sizes change (run steps 2. and 3.)
    `ng build --prod --stats-json && webpack-bundle-analyzer dist/stats.json`
-4. Review (see [app-routing.module.ts](files/src/app/app-routing.module.ts.help) and [app.module.ts](files/src/app/app.module.ts.help))
+4. Review
+5. See [app-routing.module.ts](files/src/app/app-routing.module.ts.help) and [app.module.ts](files/src/app/app.module.ts.help)
 
 ### 18. Removal of unused modules manually
 
