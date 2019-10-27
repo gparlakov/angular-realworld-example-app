@@ -23,26 +23,64 @@
   npm i -g @angular/cli @briebug/jest-schematic
   ng g @briebug/jest-schematic:add
   ```
-  - if you don't want global install on any of those just use - `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder
-  - TODO - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
-
-  TODO - cut a branch and then delete all the task results - spec files etc.
+  - if you don't want global install on any of those just use - `ng add @briebug/jest-schematic`. That will just do the install and not leave anything in the global `npm` folder (for version of angular less than 6 `npx -p @angular/cli@6.2.9 ng add @briebug/jest-schematic`)
+  - `npm un @types/jasmine @types/jasminewd2` `npm i @types/jest` and change the types in tsconfig.spec.json (exclude jasmine and include jest)
 
 ## 1. Basic testing
 
 Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
 
-1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts
+1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts with the following contents:
+    ```ts
+    import { ArticlePreviewComponent } from './article-preview.component';
+    import { Article } from '../../core';
+
+    describe('ArticlePreviewComponent', () => {
+
+    });
+    ```
 2.  Construct the component in a test case and verify it actually instantiates successfully
     - no dependencies
     - simple logic
+    ```ts
+    it('should instantiate', () => {
+      const c = new ArticlePreviewComponent();
+
+      expect(c).toBeDefined();
+    });
+    ```
 3.  Test the `toggleFavorite` with argument `true`
+    ```ts
+      it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+        const c = new ArticlePreviewComponent();
+        c.article = { favoritesCount: 0 } as Article;
+
+        c.onToggleFavorite(true);
+        expect(c.article.favoritesCount).toBe(1);
+        expect(c.article.favorited).toBe(true);
+      });
+    ```
 4.  Test the `toggleFavorite` with argument `false`
-5.  Review
+    ```ts
+    it('when toggleFavorite called with false should decrease favoritesCount and toggle favorited to false', () => {
+      const c = new ArticlePreviewComponent();
+      c.article = { favoritesCount: 1, favorited: true } as Article;
+
+      c.onToggleFavorite(false);
+      expect(c.article.favoritesCount).toBe(0);
+      expect(c.article.favorited).toBe(false);
+    });
+    ```
+5.  Review. See [article-preview.component](files/src/app/shared/article-helpers/article-preview.component.spec.ts.help) for help
+
+
 
 ## 2. Basic testing - Dependencies
 
-DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-Snippets) to skip some of the code boilerplate
+0. DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-Snippets) to skip some of the code boilerplate
+  - try using snippets like `t-describe-it` for the boilerplate
+  - IntelliJ plugin for snippets (looks like it supports some snippets out of the box according to this [article](https://jaxenter.com/angular-2-intellij-netbeans-eclipse-128461.html)) https://plugins.jetbrains.com/plugin/8395-angular-2-typescript-live-templates/versions
+
 
 1. Create the test file for the [AppComponent](./src/app/app.component.ts)
 2. Test cases
@@ -60,15 +98,68 @@ DEMO - using [snippets](https://github.com/BeastCode/VSCode-Angular-TypeScript-S
 5. Review
 6. See [help](./files/src/app/app.component.spec.ts.help)
 
-// Notes: Talk a bit about implementation details in tests
+Did you instantiate the class-under-test in the test? Or some of the dependencies? What if there are many tests and the shape of some of the classes change? It might be the case that we are exposing implementation details in the tests...
 
 ## 3. Basic testing - Using the CLI generated tests
 
 1. Create a new component using the `ng generate component shared/notification`
+   - this should generate 4 files - component, spec, html and css file
+   - in the spec there is a scaffolded simple test case
 2. Run `npm test -- --watch` (see the singe test pass)
-3. Update the component and test
-   - Copy paste the [this](./files/src/app/shared/notifications/notifications.component.ts.help) in the notifications.component.ts
-   - Add injected dependency - the `NotificationService` in the providers (why?)
+3. Update the component
+   - Update the content of the notifications.component.ts file with [contents from this file](./files/src/app/shared/notifications/notifications.component.ts.help)
+      ```ts
+      import { Component, OnInit } from '@angular/core';
+      import { NotificationsService } from '../../core/services/notifications.service';
+      import { NotificationModel } from '../../core/models/notification-model';
+      import { Observable } from 'rxjs';
+
+      @Component({
+        selector: 'app-notifications',
+        template: `
+          <p *ngIf="success" class="notification notification-success">
+            {{ success }}
+          </p>
+
+          <p *ngIf="error" class="notification notification-error">
+            {{ error }}
+          </p>
+        `,
+        styles: [
+          `
+            .notification {
+              position: fixed;
+              bottom: 0;
+              right: 15px;
+            }
+
+            .notification-success {
+              border: 1px solid green;
+            }
+
+            .notification-error {
+              border: 1px solid magenta;
+            }
+          `
+        ]
+      })
+      export class NotificationsComponent implements OnInit {
+        success: string;
+        error: string;
+        constructor(private notifications: NotificationsService) {}
+
+        ngOnInit() {
+          this.notifications.message$.subscribe(m => {
+            if (m.type === 'success') {
+              this.success = m.text;
+            } else {
+              this.error = m.text;
+            }
+          });
+        }
+      }
+      ```
+   - we added injected dependency - the `NotificationService` to showcase testing components with dependencies
 4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help))
 5. Review
 
