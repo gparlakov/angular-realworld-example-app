@@ -75,7 +75,7 @@
 
 Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
 
-## 1.1 Test the `ArticleComponent`
+## 1.1 Test the `ArticlePreviewComponent`
 
 1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts with the following contents:
     ```ts
@@ -97,16 +97,54 @@ Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
     });
     ```
 3.  Test the `toggleFavorite` with argument `true`
-    ```ts
-      it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
-        const c = new ArticlePreviewComponent();
-        c.article = { favoritesCount: 0 } as Article;
+    - add another `it` test case
+        ```ts
+          it('', () => {
+          });
+        ```
+    - name it to explain what we'll do under what conditions and what we expect, for example:
+        ```ts
+          it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+          });
+        ```
+    - instantiate your class-under-test *CUT
+        ```ts
+          it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+            const c = new ArticlePreviewComponent();
+            c.article = { favoritesCount: 0 } as Article;
+          });
+        ```
+    - call the action method - what we do
+        ```ts
+          it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+            const c = new ArticlePreviewComponent();
+            c.article = { favoritesCount: 0 } as Article;
 
-        c.onToggleFavorite(true);
-        expect(c.article.favoritesCount).toBe(1);
-        expect(c.article.favorited).toBe(true);
-      });
-    ```
+            c.onToggleFavorite(true);
+          });
+        ```
+    - finally add the expectation - test that we've received what we expect
+        ```ts
+          it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+            const c = new ArticlePreviewComponent();
+            c.article = { favoritesCount: 0 } as Article;
+
+            c.onToggleFavorite(true);
+            expect(c.article.favoritesCount).toBe(1);
+            expect(c.article.favorited).toBe(true);
+          });
+        ```
+    - the end result should look a lot like:
+      ```ts
+        it('when toggleFavorite called with true should increase favoritesCount and toggle favorited true', () => {
+          const c = new ArticlePreviewComponent();
+          c.article = { favoritesCount: 0 } as Article;
+
+          c.onToggleFavorite(true);
+          expect(c.article.favoritesCount).toBe(1);
+          expect(c.article.favorited).toBe(true);
+        });
+      ```
 4.  Test the `toggleFavorite` with argument `false`
     ```ts
     it('when toggleFavorite called with false should decrease favoritesCount and toggle favorited to false', () => {
