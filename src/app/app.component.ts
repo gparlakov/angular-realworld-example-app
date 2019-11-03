@@ -14,14 +14,14 @@ export class AppComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    private notifications: NotificationsService,
+    // private notifications: NotificationsService,
     // for the bonus task add dependency -> private pusher: PusherService
     // private pusher: PusherService
   ) {}
 
   ngOnInit() {
     this.userService.populate();
-    this.notifications.success('Welcome!');
+    // this.notifications.success('Welcome!');
   }
 
   onUserWantsNotificationsButtonClick() {

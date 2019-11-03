@@ -58,8 +58,11 @@
   ```bash
   git clone https://github.com/gparlakov/angular-realworld-example-app
   ```
+- install dependecies `npm install`
 
-- [_Optional_ _after 1.2_] setup jest - ([doc](https://github.com/briebug/jest-schematic#usage-))
+- run the tests `npm test` or `npm test -- --watch` for continuous running tests
+
+- [Switching Angular CLI generated Project to JEST_] setup jest - ([doc](https://github.com/briebug/jest-schematic#usage-))
   ```bash
   npm i -g @angular/cli @briebug/jest-schematic
   ng g @briebug/jest-schematic:add
@@ -128,12 +131,13 @@ Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
 2. Test cases
    - it's constructed successfully
    - when ngOnInit will call the `populate` method on the `userService`
-3. Mock out the dependency (using createSpy / _jest.fn_ for jasmine / _jest_ respectively)
+_Note: Running the tests - `npm test` or `npm test -- --watch` for continuous run_
+3. Mock out the `UserService` dependency (using createSpy / _jest.fn_ for jasmine / _jest_ respectively)
    ```ts
    //jest
-   const dep = { populate: jest:fn() }
+   const dep = { populate: jest.fn() as Function } as UserService
    // jasmine
-   const dep = jasmine.createSpy('UserService', ['populate']);
+   const dep = jasmine.createSpy('UserService', ['populate']) as UserService;
    ```
 4. Add another dependency - the `NotificationService` (and/or `LogService`)
    - mock it and use the mock
