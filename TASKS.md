@@ -188,7 +188,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 3. Basic testing - Using the CLI generated tests
 
-1. Create a new component using the `ng generate component shared/notification`
+1. Create a new component using the `ng generate component shared/notifications`
    - this should generate 4 files - component, spec, html and css file
    - in the spec there is a scaffolded simple test case
 2. Run `npm test -- --watch` (see the singe test pass)
@@ -246,7 +246,9 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
       }
       ```
    - we added injected dependency - the `NotificationService` to showcase testing components with dependencies
-4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help))
+4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help)), for example:
+  - `on a success type message it populates the success property`
+  - `on a error type message it populates the error property`
 5. Review
 6. Don't forget to add the component in the `app.component.html` (just uncomment it)
 
