@@ -75,6 +75,8 @@
 
 Demo - on the [ListErrorsComponent](./src/app/shared/list-errors.component.ts)
 
+## 1.1 Test the `ArticleComponent`
+
 1.  Create a test file for the `./src/app/shared/article-helpers/article-preview.component.ts` - article-preview.component.spec.ts with the following contents:
     ```ts
     import { ArticlePreviewComponent } from './article-preview.component';
