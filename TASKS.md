@@ -188,7 +188,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 3. Basic testing - Using the CLI generated tests
 
-1. Create a new component using the `ng generate component shared/notification`
+1. Create a new component using the `ng generate component shared/notification` / `npx ng generate component shared/notifications`
    - this should generate 4 files - component, spec, html and css file
    - in the spec there is a scaffolded simple test case
 2. Run `npm test -- --watch` (see the singe test pass)
@@ -247,105 +247,101 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
       ```
    - we added injected dependency - the `NotificationService` to showcase testing components with dependencies
 4. Add a test for the case of success and for the case of error (populates the correct input) (see [help](./files/src/app/shared/notifications/notificatons.component.spec.ts.help)).
-4.1 The "success" case:
- -  we can start with a failing test
-    ```ts
-      it('when "success" type message arrives it should populate the success', () => {
-          expect(component.success).toEqual('A success message');
-      });
-    ```
-  - we need to call
+  - 4.1. The "success" case:
+    - we can start with a failing test
       ```ts
-      component.ngOnInit()
+        it('when "success" type message arrives it should populate the success', () => {
+            expect(component.success).toEqual('A success message');
+        });
       ```
+    - we need to call
+        ```ts
+        component.ngOnInit()
+        ```
 
-  - broken because the service is `undefined` at this point - let's provide it
-      ```ts
-        TestBed.configureTestingModule({
-        //...
-        providers: [
-          { provide: NotificationsService, useValue: {} as NotificationsService }
-        ]
-      ```
-  - still broken since the service does not expose the `messages$` property, so let's provide that (importing the `of` function from `rxjs` as well as `NotificationModel`)
-      ```ts
-        import { of } from 'rxjs';
-        import { NotificationModel } from 'src/app/core/models/notification-model';
-        // ...
-        TestBed.configureTestingModule({
-        //...
-        providers: [
-        {
-          provide: NotificationsService,
-          useValue: { message$: of({} as NotificationModel) } as NotificationsService
-        }
-      ]
-      ```
-  - still broken - as the 'message' we send is just an empty object `{}` so let's change that
-      ```ts
-        useValue: {
-          message$: of({ type: 'success', text: 'Tes message' } as NotificationModel)
-        } as NotificationsService
-      ```
-  - whoops, still broken. Notice the error message. Let's fix it
-      ```ts
-      useValue: {
-        message$: of({ type: 'success', text: 'A success message' } as NotificationModel)
-      } as NotificationsService
-      ```
-  - Green test! Awesome!
-4.2. The error case (using some CPDD - copy paste driven development :)
-  - let's start with a copy-paste of our previous test, rename it and change the expectation
-      ```ts
-      it('when `error` type message arrives it should populate the error property', () => {
-        component.ngOnInit();
-        expect(component.error).toEqual('An error message');
-      });
-      ```
-  - broken because our setup caters fro the success case only - so let's change that. We'll create a `Subject` of type `NotificationModel` and give that to the `NotificationsService` in the providers of our `TestBed` module
-      ```ts
-        const messages$ = new Subject<NotificationModel>();
-
-        beforeEach(async(() => {
+    - broken because the service is `undefined` at this point - let's provide it
+        ```ts
           TestBed.configureTestingModule({
-            declarations: [NotificationsComponent],
-            providers: [
-              {
-                provide: NotificationsService,
-                useValue: {
-                  message$: messages$ as Observable<NotificationModel>
-                } as NotificationsService
-              }
-            ]
-          }).compileComponents();
-        }));
-    ```
-  - and now both the **success** test and the **error** one are broken.To fix the **success** test let's emit a message:
-      ```ts
-      //...
-      component.ngOnInit();
-      messages$.next({ type: 'success', text: 'A success message' });
-      expect...
+          //...
+          providers: [
+            { provide: NotificationsService, useValue: {} as NotificationsService }
+          ]
+        ```
+    - still broken since the service does not expose the `messages$` property, so let's provide that (importing the `of` function from `rxjs` as well as `NotificationModel`)
+        ```ts
+          import { of } from 'rxjs';
+          import { NotificationModel } from 'src/app/core/models/notification-model';
+          // ...
+          TestBed.configureTestingModule({
+          //...
+          providers: [
+          {
+            provide: NotificationsService,
+            useValue: { message$: of({} as NotificationModel) } as NotificationsService
+          }
+        ]
+        ```
+    - still broken - as the 'message' we send is just an empty object `{}` so let's change that
+        ```ts
+          useValue: {
+            message$: of({ type: 'success', text: 'Tes message' } as NotificationModel)
+          } as NotificationsService
+        ```
+    - whoops, still broken. Notice the error message. Let's fix it
+        ```ts
+        useValue: {
+          message$: of({ type: 'success', text: 'A success message' } as NotificationModel)
+        } as NotificationsService
+        ```
+    - Green test! Awesome!
+  - 4.2. The error case (using some CPDD - copy paste driven development :)
+    - let's start with a copy-paste of our previous test, rename it and change the expectation
+        ```ts
+        it('when `error` type message arrives it should populate the error property', () => {
+          component.ngOnInit();
+          expect(component.error).toEqual('An error message');
+        });
+        ```
+    - broken because our setup caters fro the success case only - so let's change that. We'll create a `Subject` of type `NotificationModel` and give that to the `NotificationsService` in the providers of our `TestBed` module
+        ```ts
+          const messages$ = new Subject<NotificationModel>();
+
+          beforeEach(async(() => {
+            TestBed.configureTestingModule({
+              declarations: [NotificationsComponent],
+              providers: [
+                {
+                  provide: NotificationsService,
+                  useValue: {
+                    message$: messages$ as Observable<NotificationModel>
+                  } as NotificationsService
+                }
+              ]
+            }).compileComponents();
+          }));
       ```
-  - now to finish the **error** test case we need to simply emit the correct message:
-      ```ts
-      //...
-      component.ngOnInit();
-      messages$.next({ type: 'error', text: 'An error message' });
-      expect...
-      ```
-  - Awesome we have Green tests!
-  - What would happen if we emit before `ngOnInit();`?
-    - How can we mitigate? (Behav Subj)
-
-
-
-
+    - and now both the **success** test and the **error** one are broken.To fix the **success** test let's emit a message:
+        ```ts
+        //...
+        component.ngOnInit();
+        messages$.next({ type: 'success', text: 'A success message' });
+        expect...
+        ```
+    - now to finish the **error** test case we need to simply emit the correct message:
+        ```ts
+        //...
+        component.ngOnInit();
+        messages$.next({ type: 'error', text: 'An error message' });
+        expect...
+        ```
+    - Awesome we have Green tests!
+    - What would happen if we emit before `ngOnInit();`?
+      - How can we mitigate? (Behav Subj)
 
 5. Review
 6. Don't forget to add the component in the `app.component.html` (just uncomment it)
 
-## 4. TDD Test Driven Development
+## 5. TDD Test Driven Development
 
 1. Create a `log.service.spec.ts` \*use t-describe-it (if available)
 2. Import the LogService from `./log.service`
@@ -354,9 +350,10 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 5. Create the `log.service` file - all green
 6. Create a `it` test case that the LogService instantiates
 7. See it fail - create LogService class - all green
-8. Add a `it` test case that the `error` method invokes the console.log (jest module mocking)
+8. Add a `it` test case that the `error` method invokes the console.log
 9. See it fail - add the logic - all green
-10. Add a `it` test case that when `error` invoked with an `Error` the console.log is invoked with the message
+10. Add a `it` test case that when `error` invoked with an `Error` the console.log is invoked with the message.
+  - to mock the `console.log` we can `console.log = jest.fn()`
 11. See it fail - add the logic - all green
 12. Congrats - now you are a TDD dev!
 13. Review
