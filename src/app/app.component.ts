@@ -14,14 +14,14 @@ export class AppComponent implements OnInit {
 
   constructor(
     private userService: UserService,
-    // private notifications: NotificationsService,
+    private notifications: NotificationsService,
     // for the bonus task add dependency -> private pusher: PusherService
     // private pusher: PusherService
   ) {}
 
   ngOnInit() {
     this.userService.populate();
-    // this.notifications.success('Welcome!');
+    this.notifications.success('Welcome!');
   }
 
   onUserWantsNotificationsButtonClick() {
@@ -50,6 +50,8 @@ export class AppComponent implements OnInit {
         e => {
           // this.logger.error(e);
           // notify user push notifications are now over!
+          // this.notifications.error('Push notifications are now over due to an error. Sitch them on again')
+          this.notificationsButtonVisible = true;
         },
         () => {
           // the complete logic - retry the whole thing. ex:
