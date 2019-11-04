@@ -1,0 +1,16 @@
+{
+  "files.associations": {
+    "*ts.help": "typescript",
+    "*js.help": "javascript",
+    "*json.help": "json"
+  },
+  "cSpell.words": [
+    "Chainable",
+    "autospy",
+    "esnext",
+    "localstorage",
+    "scuri"
+  ],
+  "typescript.tsdk": "node_modules\\typescript\\lib",
+  "prettier.printWidth": 100
+}
