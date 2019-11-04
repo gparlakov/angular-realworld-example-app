@@ -12,8 +12,8 @@
   * [6. Promise testing - async and fake async](#6-promise-testing---async-and-fake-async)
     + [6.1. Async testing](#61-async-testing)
     + [6.2. Fake async testing](#62-fake-async-testing)
-    + [7. Observable testing](#7-observable-testing)
-    + [8. Forms / Observable testing](#8-forms---observable-testing)
+  * [7. Observable testing](#7-observable-testing)
+  * [8. Forms / Observable testing](#8-forms---observable-testing)
 - [Day 3](#day-3)
     + [9. Setup E2E](#9-setup-e2e)
     + [10. E2E Tests](#10-e2e-tests)
@@ -59,6 +59,8 @@
   git clone https://github.com/gparlakov/angular-realworld-example-app
   ```
 - install dependecies `npm install`
+
+- install Angular CLI globally `npm i -g @angular/cli` (or use `npx` in front of `ng` command every time we need it. E.g. `npx ng generate component shared\notifications`)
 
 - run the tests `npm test` or `npm test -- --watch` for continuous running tests
 
@@ -383,17 +385,19 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 5. Automate unit test create/update
 
+`npm i -g @angular/cli`
+
 0. Demo - `setup` function create manually from scratch (`NotificationsService` spec)
    - `setup` houses the instantiation of class-under-test and its dependencies (otherwise done by Angular)
    - also it helps if test conditions are placed in the `builder`
    - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
 
 1. Install/update `npm install --save-dev scuri@latest` (or short `npm i -D scuri@latest`)
-2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts`
+2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts` (might need to `npx ng g scuri:spec src\app\shared\layout\header.component.ts` if no ng cli installed globally)
   - notice that it's using `autoSpy`
   - autospy will get a Function (`UserService`) and create a mock for each of its "public" methods - that is each method that's part of the `UserService.prototype`
     - autospy will not populate properties - so we need to (in this example that is `UserService.currentUser` - it should be an observable so that `.subscribe()` method exists on it)
-3. Run `ng g scuri:autospy` to generate the autospy
+3. Run `ng g scuri:autospy --for jest` to generate the autospy (or `npx ng g scuri:autospy`)
    - move the created `auto-spy.ts` to `./src/app/auto-spy.ts`
 4. Add the paths to tsconfig.json ([help](./files/tsconfig.json.help))
    ```json
@@ -411,28 +415,78 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
       'autoSpy':'<rootDir>/src/app/auto-spy.ts'
     }
    ```
-6. Run `npm test` (or `npm test -- --watch`) and
-7. Run `ng g scuri:spec --name ./src/app/shared/notifications.component.ts --force`
-  - now there we can use the diff tool from git/VS Code/IntelliJ and merge the previous spec test with the current version
-8. Review
+6. Run `npm test` (or `npm test -- --watch`)
+7. Review
+8. We'll finish the test cases for `header.component` later - after 7.
+## 5.1. Merging into existing tests
+  - Run `ng g scuri:spec --name ./src/app/shared/notifications.component.ts --force`
+    - overwrites the existing notifications component tests, but we can "merge" them
+  - Using the diff tool from git/VS Code/IntelliJ we can merge the previous spec test with the current version
 
 ## 6. Promise testing - async and fake async
 
 ### 6.1. Async testing
 
 1. Create a `profile-resolver.service.spec.ts` (try using SCuri `ng g scuri:spec profile\profile-resolver.service.ts`)
-2. Create a test case for `when resolve is called and the profileService.get rejects should call router.navigate("/")`
+2. Create a test case for `when resolve is called and the profileService.get rejects should call router.navigateByUrl("/")` (if using scuri - just use the scaffolded test and just rename it)
+  - we need to have a method that sets up a rejection after `profileService.get` is called so :
+      ```ts
+      withGetProfileRejects() {
+        profilesService.get.mockReturnValue(Promise.reject());
+        return builder;
+      }
+      ```
+  - call that in our test
+      ```ts
+      setup().default().withGetProfileRejects();
+      ```
+  - we need to mock the route passed in
+      ```ts
+      c.resolve({ params: { username: 'my' } as Params } as ActivatedRouteSnapshot, null);
+      ```
+      - should be enough because we are testing the `catch` code path so the input would be largely ignored
+  - now we can assert that `router.navigateByUrl` has been called with '/' (hint use `toHaveBeenCalledWith('/')`)
+  - but it says it has not been called (even worse - if we try debugging we'll see that at actually gets called!!!)
 3. Use `async` to wrap it (`import { async } from '@angular/core/testing';`)
-4. Review
-5. See [file](files/src/app/profile/profile-resolver.service.spec.ts.help) for help
+  - wrap the `it` callback with
+      ```ts
+      it('name', async(() => {
+        ///
+      }});
+      ```
+  - now it still does not pass because we need to return a promise from our test in order for the `async` to work
+      ```ts
+      c.resolve({ params: { username: 'test' } } as any, null).then(() => {
+        expect(router.navigateByUrl).toHaveBeenCalledWith('/');
+      });
+      ```
+  - async waits for each promise (created in its context) to resolve before continuing
+4. Create a test case for `when resolve is called it should call the profileService.get with the "username" param`
+  - we need to return a promise from `profileService.get()` - so use
+    - `builder.default()` - this would make getting the profile the `default` case - our green path
+    - or a separate method `builder.withProfilesServiceResolving(to: Profile)` if that's more convenient
+5. Review
+6. See [file](files/src/app/profile/profile-resolver.service.spec.ts.help) for help
 
 ### 6.2. Fake async testing
 
 _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-gotchas/what-was-that-flushmicrotasks-thing-again-4cfae7ba5fac) article and [presentation](https://docs.google.com/presentation/d/1_5-p0t_FtKYDKJgqWZYNyJ3NsR2U8J5kY2ZHPmare1w/edit?usp=sharing)._
 
 1. Create a `article.component.spec.ts` file with the test infrastructure - `describe` with an `it` ...
-2. Create a test case `when populateComments is called and getAll comments promise resolves it should set the comments to the result`
-3. We need to provide a Promise and then do something on it's resolution(in the `then()` callback)
+  - if using scuri - comment out the `it`-s (or just the error-ing lines of code) except for the one with `populateComments` method (4-th one):
+2. Create a test case(or rename scaffolded) `when populateComments is called and getAll comments promise resolves it should set the comments to the result`
+  -  `import { Comment } from '../core';`
+  - create a method in builder
+      ```ts
+      withCommentsResponse(comments: Comment[]) {
+        commentsService.getAll.mockReturnValue(Promise.resolve(comments));
+        return builder;
+      }
+      ```
+  - call it in the test
+  - we'll need to wrap the `it` callback with `fakeAsync(() => {/*the test */})`
+  - and call `flushMicrotasks()` just after `c.populateComments` has been called in order to force the promise to get resolved and call its `.then(() =>{})` callback
+  - what if `getAll` rejects? - maybe add a test case for that too
 4. Add a test case for `addComments` promise resolves
 5. Add a test case for `addComments` promise rejects
 6. Add a test case for `deleteComment` success
@@ -443,11 +497,38 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Start `user.service.spec.ts` - manually, snippet or scuri
 2. Add test case `when populate called and token in localStorage and user fetch succeeds should emit the user`
+  - use `default` builder method to house the default setup
+    ```ts
+    default() {
+      jwtService.getToken.mockReturnValue('token');
+      apiService.get.mockReturnValue(of({}));
+      return builder;
+    },
+    ```
+  - OR use separate methods for each dependency
+  - we need to subscribe to `currentUser` to check our expectations
+      ```ts
+      let value;
+      c.currentUser.subscribe(u => value = u);
+      //...
+      expect(value).toEqual({/** the expected user value*/})
+      ```
 3. Add test case `when populate called and token in localStorage and user fetch succeeds should emit isAuthenticated`
+  - we should be able to reuse the existing setup
+  - again, we need to subscribe to `isAuthenticated` (see 4.)
 4. Try subscribe utility [subscribe-in-test](./src/app/testing/subscribe-in-test.ts)
+  - it allows for one-liner subscribes with a specified number of emissions or takeUntil logic with another observable (`subscribe(obs$ , destroy$)` - will get the values from `obs$` until `destroy$` emits and then it will stop and unsubscribe)
 5. Add test case `when populate called and empty token in localStorage should emit the empty user and isAuthenticated false`
+  - reuse the setup with adding a method `withEmptyToken` in the our setup builder object
 6. Add test case `when attemptAuth called and POST succeeds should emit "success" and currentUser should also emit`
+  - we'll need a `withApiServicePostReturning` method in our setup builder object
+  - what if `type` is `login` and if it's something else
+    - it should call the same method `this.apiService.post()` with difference in arguments - once with `/users/login` and the other time with `/users` and both of those cases pass in user credentials
 7. Add test case `when attemptAuth called and POST fails should emit the error and current user should not emit`
+  - we can extend the `withApiServicePostReturning(p: Promise<any> | any)` or add a new method
+    - `withApiServicePostRejecting()` - either way is fine
+  - we need to cover our error case
+    - `subscribe` will aggregate errors right alongside rest it the values array
 8. [Optional] Test the rest of the methods - `update`, `purgeAuth`(is this already tested?) and `getCurrentUser`
 9. Review.
 10. See [help](files/src/app/core/services/user.service.spec.ts.help)
@@ -455,15 +536,42 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 ### 8. Forms / Observable testing
 
 1. `auth.component` - start test (automate?)
+2. Add test case for `when instantiated the form group should have "email" and "password" controls"`
+  - just instantiate the class and do the assertions
+  - `expect(c.authForm.getControl('email')).toBeDefined`
+  - similar for the `password` form control
 2. Add test case for `when ngOnInit is called and url ends with 'login' should set title and authType`
+  - create a `withRoute(endingIn:'register' | 'login')` method and make sure `this.route.url` is an observable
 3. Add test case for `when ngOnInit is called and url ends with 'register' should set title and authType and add a 'username' control`
 4. Add test case `when submitForm called it should set the isSubmitting to true and clear out the errors`
 5. Add test case `when submitForm called it should call attemptAuth with the auth type and credentials`
+  - should make sure that `this.userService.attemptAuth` returns an observable
+  - `builder.withAttemptAuthSuccess()` or define that in `builder.default()` since it's the default case
 6. Add test case `when submitForm called and attemptAuth result emits it should navigate to /`
+  - reuse the setup from previos point
 7. Add test case `when submitForm called and attemptAuth result emits error it should set errors and isSubmitting to false`
+  - a new method `withAttemptAuthRejecting()`
 8. See [help](./files/src/app/auth/auth.component.spec.ts.help)
 9. Review
 
+### 8.1. Finish testing Header component
+1. We can now continue and add tests for the header component
+  - finish the test name which was scaffolded `it('when ngOnInit is called it should subscribe to currentUser, () => {`
+  - we need a subject to subscribe to. Let's create a `withUser` method on our builder object:
+      ```ts
+      withUser(u: User) {
+          userService.currentUser = of(u);
+          return builder;
+      },
+      ```
+  - now we need to call it(`withUser` method) in the test
+      ```ts
+      setup().default().withUser({email: 'my@email.co'} as User)
+      ```
+  - now after `ngOnInit` there should be a user in `c.currentUser`
+      ```ts
+      expect(c.currentUser).toEqual({email: 'my@email.co'});
+      ```
 # Day 3
 
 ### 9. Setup E2E
