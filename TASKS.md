@@ -347,14 +347,34 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 2. Import the LogService from `./log.service`
 3. Run the `npm test -- --watch log --no-cache` to run the log service tests in watch mode
 4. See the failure
-5. Create the `log.service` file - all green
+5. Create the `log.service` file
+  - with content
+    ```ts
+    export class LogService {}
+    ```
+  - all green
 6. Create a `it` test case that the LogService instantiates
 7. See it fail - create LogService class - all green
-8. Add a `it` test case that the `error` method invokes the console.log
-9. See it fail - add the logic - all green
+8. Add a `it` test case that the `error` method invokes `console.log` method
+9. See it fail
+  - add the logic
+    ```ts
+    error() {
+      console.log();
+    }
+    ```
+  - all green
 10. Add a `it` test case that when `error` invoked with an `Error` the console.log is invoked with the message.
   - to mock the `console.log` we can `console.log = jest.fn()`
-11. See it fail - add the logic - all green
+11. See it fail
+  - add the logic
+    ```ts
+    error() {
+      console.log();
+    }
+    ```
+  - all green
+
 12. Congrats - now you are a TDD dev!
 13. Review
 14. See [help](./files/src/app/core/services/log.service.spec.ts.help)
