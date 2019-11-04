@@ -388,7 +388,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
    - also it helps if test conditions are placed in the `builder`
    - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
 
-1. Install `npm install --save-dev scuri` (or short `npm i -D scuri`)
+1. Install `npm install --save-dev scuri@latest` (or short `npm i -D scuri`)
 2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts`
 3. Run `ng g scuri:autospy` to generate the autospy
    - move the created `auto-spy.ts` to `./src/app/auto-spy.ts`
