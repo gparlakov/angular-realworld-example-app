@@ -497,16 +497,64 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Start `user.service.spec.ts` - manually, snippet or scuri
 2. Add test case `when populate called and token in localStorage and user fetch succeeds should emit the user`
+  - use `default` builder method to house the default setup
+    ```ts
+    default() {
+      jwtService.getToken.mockReturnValue('token');
+      apiService.get.mockReturnValue(of({}));
+      return builder;
+    },
+    ```
+  - OR use separate methods for each dependency
+  - we need to subscribe to `currentUser` to check our expectations
+      ```ts
+      let value;
+      c.currentUser.subscribe(u => value = u);
+      //...
+      expect(value).toEqual({/** the expected user value*/})
+      ```
 3. Add test case `when populate called and token in localStorage and user fetch succeeds should emit isAuthenticated`
+  - we should be able to reuse the existing setup
+  - again, we need to subscribe to `isAuthenticated` (see 4.)
 4. Try subscribe utility [subscribe-in-test](./src/app/testing/subscribe-in-test.ts)
+  - it allows for one-liner subscribes with a specified number of emissions or takeUntil logic with another observable (`subscribe(obs$ , destroy$)` - will get the values from `obs$` until `destroy$` emits and then it will stop and unsubscribe)
 5. Add test case `when populate called and empty token in localStorage should emit the empty user and isAuthenticated false`
+  - reuse the setup with adding a method `withEmptyToken` in the our setup builder object
 6. Add test case `when attemptAuth called and POST succeeds should emit "success" and currentUser should also emit`
+  - we'll need a `withApiServicePostReturning` method in our setup builder object
+  - what if `type` is `login` and if it's something else
+    - it should call the same method `this.apiService.post()` with difference in arguments - once with `/users/login` and the other time with `/users` and both of those cases pass in user credentials
 7. Add test case `when attemptAuth called and POST fails should emit the error and current user should not emit`
+  - we can extend the `withApiServicePostReturning(p: Promise<any> | any)` or add a new method
+    - `withApiServicePostRejecting()` - either way is fine
+  - we need to cover our error case
+    - `subscribe` will aggregate errors right alongside rest it the values array
 8. [Optional] Test the rest of the methods - `update`, `purgeAuth`(is this already tested?) and `getCurrentUser`
 9. Review.
 10. See [help](files/src/app/core/services/user.service.spec.ts.help)
 
-### 7.1. Finish testing Header component
+### 8. Forms / Observable testing
+
+1. `auth.component` - start test (automate?)
+2. Add test case for `when instantiated the form group should have "email" and "password" controls"`
+  - just instantiate the class and do the assertions
+  - `expect(c.authForm.getControl('email')).toBeDefined`
+  - similar for the `password` form control
+2. Add test case for `when ngOnInit is called and url ends with 'login' should set title and authType`
+  - create a `withRoute(endingIn:'register' | 'login')` method and make sure `this.route.url` is an observable
+3. Add test case for `when ngOnInit is called and url ends with 'register' should set title and authType and add a 'username' control`
+4. Add test case `when submitForm called it should set the isSubmitting to true and clear out the errors`
+5. Add test case `when submitForm called it should call attemptAuth with the auth type and credentials`
+  - should make sure that `this.userService.attemptAuth` returns an observable
+  - `builder.withAttemptAuthSuccess()` or define that in `builder.default()` since it's the default case
+6. Add test case `when submitForm called and attemptAuth result emits it should navigate to /`
+  - reuse the setup from previos point
+7. Add test case `when submitForm called and attemptAuth result emits error it should set errors and isSubmitting to false`
+  - a new method `withAttemptAuthRejecting()`
+8. See [help](./files/src/app/auth/auth.component.spec.ts.help)
+9. Review
+
+### 8.1. Finish testing Header component
 1. We can now continue and add tests for the header component
   - finish the test name which was scaffolded `it('when ngOnInit is called it should subscribe to currentUser, () => {`
   - we need a subject to subscribe to. Let's create a `withUser` method on our builder object:
@@ -524,20 +572,6 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
       ```ts
       expect(c.currentUser).toEqual({email: 'my@email.co'});
       ```
-
-
-### 8. Forms / Observable testing
-
-1. `auth.component` - start test (automate?)
-2. Add test case for `when ngOnInit is called and url ends with 'login' should set title and authType`
-3. Add test case for `when ngOnInit is called and url ends with 'register' should set title and authType and add a 'username' control`
-4. Add test case `when submitForm called it should set the isSubmitting to true and clear out the errors`
-5. Add test case `when submitForm called it should call attemptAuth with the auth type and credentials`
-6. Add test case `when submitForm called and attemptAuth result emits it should navigate to /`
-7. Add test case `when submitForm called and attemptAuth result emits error it should set errors and isSubmitting to false`
-8. See [help](./files/src/app/auth/auth.component.spec.ts.help)
-9. Review
-
 # Day 3
 
 ### 9. Setup E2E
