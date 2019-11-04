@@ -383,7 +383,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 5. Automate unit test create/update
 
-0. Demo - `setup` function create manually from scratch ()
+0. Demo - `setup` function create manually from scratch (`NotificationsService` spec)
    - `setup` houses the instantiation of class-under-test and its dependencies (otherwise done by Angular)
    - also it helps if test conditions are placed in the `builder`
    - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
