@@ -341,7 +341,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 5. Review
 6. Don't forget to add the component in the `app.component.html` (just uncomment it)
 
-## 5. TDD Test Driven Development
+## 4. TDD Test Driven Development
 
 1. Create a `log.service.spec.ts` \*use t-describe-it (if available)
 2. Import the LogService from `./log.service`
