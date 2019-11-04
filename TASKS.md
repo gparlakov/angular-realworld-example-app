@@ -383,13 +383,16 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 5. Automate unit test create/update
 
-0. Demo - `setup` function create manually from scratch
+0. Demo - `setup` function create manually from scratch ()
    - `setup` houses the instantiation of class-under-test and its dependencies (otherwise done by Angular)
    - also it helps if test conditions are placed in the `builder`
    - helps in getting back control over instantiation, in maintaining the specific format of the tests which allows for **Automating** them
 
 1. Install/update `npm install --save-dev scuri@latest` (or short `npm i -D scuri@latest`)
 2. Run `ng g scuri:spec src\app\shared\layout\header.component.ts`
+  - notice that it's using `autoSpy`
+  - autospy will get a Function (`UserService`) and create a mock for each of its "public" methods - that is each method that's part of the `UserService.prototype`
+    - autospy will not populate properties - so we need to (in this example that is `UserService.currentUser` - it should be an observable so that `.subscribe()` method exists on it)
 3. Run `ng g scuri:autospy` to generate the autospy
    - move the created `auto-spy.ts` to `./src/app/auto-spy.ts`
 4. Add the paths to tsconfig.json ([help](./files/tsconfig.json.help))
@@ -408,10 +411,9 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
       'autoSpy':'<rootDir>/src/app/auto-spy.ts'
     }
    ```
-6. Run `npm test` (or `npm test -- --watch`)
+6. Run `npm test` (or `npm test -- --watch`) and
 7. Run `ng g scuri:spec --name ./src/app/shared/notifications.component.ts --force`
-   1. [OPTIONAL] For VS Code users - Install [SCuri code](https://marketplace.visualstudio.com/items?itemName=gparlakov.scuri-code)
-   2. In VS Code - command - SCuri code - create test (overwrite)
+  - now there we can use the diff tool from git/VS Code/IntelliJ and merge the previous spec test with the current version
 8. Review
 
 ## 6. Promise testing - async and fake async
