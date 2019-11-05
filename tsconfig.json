@@ -21,7 +21,11 @@
       "dom"
     ],
     "allowJs": true,
-    "checkJs": true
+    "checkJs": true,
+    "baseUrl": ".",
+    "paths": {
+      "autoSpy": ["./src/app/auto-spy"]
+    }
   },
   "include": ["./src/**/*.ts"],
   "exclude": ["./cypress/**/*.*"]

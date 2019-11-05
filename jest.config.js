@@ -9,7 +9,8 @@ module.exports = {
     '@core/(.*)': '<rootDir>/src/app/core/$1',
     '@env': '<rootDir>/src/environments/environment',
     '@src/(.*)': '<rootDir>/src/src/$1',
-    '@state/(.*)': '<rootDir>/src/app/state/$1'
+    '@state/(.*)': '<rootDir>/src/app/state/$1',
+    'autoSpy':'<rootDir>/src/app/auto-spy.ts'
   },
   transformIgnorePatterns: ['node_modules/(?!(jest-test))'],
   maxWorkers: 4
