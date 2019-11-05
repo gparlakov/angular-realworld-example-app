@@ -538,7 +538,7 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 1. `auth.component` - start test (automate?)
 2. Add test case for `when instantiated the form group should have "email" and "password" controls"`
   - just instantiate the class and do the assertions
-  - `expect(c.authForm.getControl('email')).toBeDefined`
+  - `expect(c.authForm.get('email')).toBeDefined`
   - similar for the `password` form control
 2. Add test case for `when ngOnInit is called and url ends with 'login' should set title and authType`
   - create a `withRoute(endingIn:'register' | 'login')` method and make sure `this.route.url` is an observable
