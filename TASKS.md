@@ -582,8 +582,13 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Install cypress `npm i cypress -D`
 2. Run it `npx cypress open` or `node_modules\.bin\cypress open`
-   2.1. Add to package.json scripts:
-   `json scripts: { ... "cypress": "cypress", "cypress.open": "npm run cypress open" }`
+   - Add to package.json scripts:
+      ```json
+      scripts: {
+        ...
+        "cypress": "cypress", "cypress.open": "npm run cypress open"
+      }
+      ```
 3. Add `{"baseUrl": "http://localhost:4200"}` to `cypress.json`
 4. Add `"allowJs": true, "checkJs": true` to tsconfig.json to allow ts to check our js test files
 5. [Optional] hide the examples from our dashboard by adding `"ignoreTestFiles": "**/examples/*.*"` to `cypress.json`
@@ -602,9 +607,25 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Create a folder in `cypress\integration\app\sign-up` and `sign-up.spec.js`
 2. Create a test case `should see the sign-up form with 2 "text" inputs - user and email`
+  - first - navigate to the correct location (make sure the `baseUrl` is set in cypress.json)
+      ```ts
+      cy.visit('/register');
+      ```
+  - we'll need to use `cy.get(...)` and combine it with `should` ([example](cypress\integration\examples\querying.spec.js#l14)):
+      ```ts
+      cy.get('input[formcontrolname=username]').should('be.visible');
+      ```
 3. Create a test case `should see the sign-up form with 1 "password" input`
+  - try selecting with `cy.get('input[type=password]`)
 4. Create a test case `should create user successfully and redirect to /`
+  - we can type in a selected input by using `cy.type` ([example](cypress/integration/examples/actions.spec.js#l12))
+      ```ts
+      cy.get('input[formcontrolname=username]').type(randUser + 'myname');
+      ```
+  - hint - to workaround existing users create a random string of some sort - for example `Math.random().toString(36).slice(2)`
+
 5. Review
+How do we know we've successfully created a user? From the UI navigation to a different page? From the response returned by the API?
 
 ### 12. Key to end to end tests - login
 
@@ -659,8 +680,15 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
    });
    ```
 2. Add test case `should be visible for logged in users`
+  - we need to register a user (why not use an existing user?)
+  - verify that the settings UI is visible. Example:
+      ```ts
+      cy.getcy.get('h1').should('have.text', 'Your Settings');
+      ```
 3. Add test case `should have the user name and email pre-filled`
+  - assert the username and email equal the ones from the registered user - `user`
 4. Add test case `should log out successfully`
+  - how do we verify user has logged out successfully?
 5. Review
 6. See [help](files/cypress/integration/settings/settings.spec.js.help)
 
@@ -668,7 +696,16 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Create the `articles.spec.js`
 2. Add test case authenticated user can see UI for writing and article
-3. Add test case authenticated user can publish artice
+3. Add test case authenticated user can publish article
+  - verify using `cy.server()` and then `cy.route(/publish/).as(publish)`
+      ```ts
+      cy.server() // start listening for requests and responses
+      cy.route('POST', 'api/articles').as('publish')
+      //... fill in the inputs and click the submit button
+      cy.way('@publish').its('status')
+        .should('be', 200)
+      ```
+  - waiting for the response from the API it by far the most robust and non-fragile way to structure your tests
 4. Review ([help](files/cypress/integration/article/article.spec.js.help))
 
 ### 15. Comment
