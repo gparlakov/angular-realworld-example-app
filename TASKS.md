@@ -13,7 +13,7 @@
     + [6.1. Async testing](#61-async-testing)
     + [6.2. Fake async testing](#62-fake-async-testing)
   * [7. Observable testing](#7-observable-testing)
-  * [8. Forms / Observable testing](#8-forms---observable-testing)
+  * [8. Forms - Observable testing](#8-forms---observable-testing)
 - [Day 3](#day-3)
     + [9. Setup E2E](#9-setup-e2e)
     + [10. E2E Tests](#10-e2e-tests)
@@ -35,8 +35,8 @@
     + [22. Angular performance - debounce](#22-angular-performance---debounce)
 - [Day 5. State management](#day-5-state-management)
     + [23. State management basic](#23-state-management-basic)
-    + [24. State management - Service with a Subject / Facade](#24-state-management---service-with-a-subject---facade)
-    + [25. NgRx Setup and replace User service](#25--ngrx--https---ngrxio-docs--setup-and-replace-user-service)
+    + [24. State management - Service with a Subject - Facade](#24-state-management---service-with-a-subject---facade)
+    + [25. NgRx Setup and replace User service](#25-ngrx-setup-and-replace-user-service)
     + [26. Incorporate User service into NgRx flow](#26-incorporate-user-service-into-ngrx-flow)
     + [27. Writing tests for classes using store](#27-writing-tests-for-classes-using-store)
     + [28. The effects test runner](#28-the-effects-test-runner)
@@ -533,7 +533,7 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 9. Review.
 10. See [help](files/src/app/core/services/user.service.spec.ts.help)
 
-### 8. Forms / Observable testing
+### 8. Forms - Observable testing
 
 1. `auth.component` - start test (automate?)
 2. Add test case for `when instantiated the form group should have "email" and "password" controls"`
@@ -712,9 +712,15 @@ How do we know we've successfully created a user? From the UI navigation to a di
 
 1. Create the `comments.spec.js`
 2. Start with an article creation logic using the API (need a token first)
-   B3. Add test case authenticated user can comment
-3. Add test case anonymous user can not comment
-4. Review ([help](files/cypress/integration/comments/comments.spec.js.help))
+    - consider using `before` (called once before all tests) or `beforeEach` (called before each test) to create an **article** on which to do the **comment** tests
+    - register a user using the `cy.register` command.
+    - login with the new user using the `cy.login` command (via the API)
+    - now we have a token - use that in next step
+    - now send a POST to the article create API endpoint `/articles`
+    - at this point  we are ready to use the newly created article to do some testing
+3. Add test case authenticated user can comment
+5. Add test case anonymous user can not comment
+6. Review ([help](files/cypress/integration/comments/comments.spec.js.help))
 
 # Day 4. Performance
  We'll tackle performance in two aspects
@@ -861,7 +867,7 @@ In medium and large sized apps a lot of (incidental) complexity gets added becau
 4. Review.
 5. For help see [final result](https://stackblitz.com/edit/angular-data-simple-angular-advanced-workshop-kiev?file=src/app/top-bar/top-bar.component.ts)
 
-### 24. State management - Service with a Subject / Facade
+### 24. State management - Service with a Subject - Facade
 
 1. Notice the `user.service.ts`. It has methods for initiating the user, purging the auth info and exposes the current user state as an observable.
   - This is what some call [Facade](https://medium.com/@thomasburlesonIA/ngrx-facades-better-state-management-82a04b9a1e39) others [Subject service](https://medium.com/@weswhite/angular-behaviorsubject-service-60485ef064fc)
@@ -871,8 +877,9 @@ In medium and large sized apps a lot of (incidental) complexity gets added becau
 2. For now we'll do nothing but get to know the `user.service.ts` and later we'll try and revisit it
 
 ### 25. NgRx Setup and replace User service
-[NgRx](https://ngrx.io/docs)
-Keep in mind that importing from `src/app/..` might break the build...
+  - docs [NgRx](https://ngrx.io/docs)
+  - Keep in mind that importing from `src/app/..` might break the build. To fix edit `src/tsconfig.app.json` replace `"baseUrl":"./"` with `"baseUrl":"../"`
+    - _why? because the tool you are using(VSCode/other) will probably use the `tsconfig.json` from the root folder and import using it's `baseUrl` as a reference, while the Angular build uses `tsconfig.app.json` (see [angular.json line 17](angular.json#l17))_
 
 1. Setup. By using the `ng add`, which in turn uses the `Schematics` capabilities we can quickly setup ngrx in our app with minimal manual steps
    - `ng add @ngrx/schematics --defaultCollection false` - add a schematic to assist in creation of new reducers/actions/effects
@@ -918,7 +925,7 @@ Keep in mind that importing from `src/app/..` might break the build...
 
 3. User actions
    - `ng g @ngrx/schematics:action state/user/user --api --creators` - create the action file and scaffold the users load action
-   - rename `loadUsersFailure` `loadUsersFailure` and `loadUsersFailure` to `loadUserFailure` `loadUserFailure` and `loadUserFailure` - we are loading a single user
+   - rename `loadUsers` `loadUsersSuccess` and `loadUsersFailure` to `loadUser` `loadUserSuccess` and `loadUserFailure` - we are loading a single user
    - rename `[User] Load Users` to `[User] Load User` - same reason
      - Why do we need the `[User]` thing?
 4. User effects
