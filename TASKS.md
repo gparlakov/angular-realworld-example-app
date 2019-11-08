@@ -639,14 +639,12 @@ How do we know we've successfully created a user? From the UI navigation to a di
    ```json
    {
       "compilerOptions": {
-        "baseUrl": ".",
-        "typeRoots": ["../node_modules/cypress/types"],
-        "types": ["index"],
+        "baseUrl": "./",
+        "typeRoots": ["../node_modules/cypress/types", "./support/index.d.ts"],
         "checkJs": true,
         "allowJs": true
-      },
-      "include": ["./support/index.d.ts"]
-   }
+      }
+    }
    ```
    - and a `./cypress/support/index.d.ts`
    ```ts
