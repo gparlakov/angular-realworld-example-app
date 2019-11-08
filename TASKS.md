@@ -627,9 +627,12 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 5. Review
 How do we know we've successfully created a user? From the UI navigation to a different page? From the response returned by the API?
 
-### 12. Key to end to end tests - login
+### 12. Test Sign In page
 
-1. Create the `login` helper command - [command](./files/cypress/support/commands.js.help)
+1. We'll need to create a `register` which registers a user using the API (and NOT the SignUp page). Why?
+  - Faster tests
+  - Make our `Sign In` tests independent of the `Sign Up` page. If `Sign Up` page is down we can still test the `Sign In`
+1. Create the `register` helper command - [command](./files/cypress/support/commands.js.help)
 2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json` (there is a `cypress.json.help` file in `/files`)
 3. For intellisense help add a `tsconfig.json` in `./cypress` with the following content:
 
@@ -657,16 +660,28 @@ How do we know we've successfully created a user? From the UI navigation to a di
 
    declare namespace Cypress {
      interface Chainable<Subject> {
-       login(): Chainable<User>;
+       register(): Chainable<User>;
      }
    }
    ```
-4. Review.
+4. Create a a `sign-in.spec.js` file
+
+5. Test that sign in UI is in place (inputs and buttons)
+6. Test that that `a registered user can successfully sign in`
+  - Use the register command to create a user
+      ```ts
+      const user = cy.register()
+      ```
+  - use the email and password from this new user (`user`) and fill in the inputs
+  - click on the button and send the request
+  - check that the response status is 200
+
+Review.
 5. See [help](files/cypress/support/commands.js.help)
 
 ### 13. Settings tests
 
-0. Begin with adding a `register` command - see [help](files/cypress/support/commands.v2.js.help)
+0. Begin with adding a `login` command - see [help](files/cypress/support/commands.v2.js.help)
 
 1. Create the `./cypress/integration/settings/settings.spec.js`
    ```js
