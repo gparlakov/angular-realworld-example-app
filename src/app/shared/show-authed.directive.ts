@@ -3,13 +3,16 @@ import {
   Input,
   OnInit,
   TemplateRef,
-  ViewContainerRef
+  ViewContainerRef,
+  OnDestroy
 } from '@angular/core';
+import {Subscription } from 'rxjs';
 
 import { UserService } from '../core';
 
 @Directive({ selector: '[appShowAuthed]' })
-export class ShowAuthedDirective implements OnInit {
+export class ShowAuthedDirective implements OnInit, OnDestroy {
+  private subscription = new Subscription();
   constructor(
     private templateRef: TemplateRef<any>,
     private userService: UserService,
@@ -19,7 +22,8 @@ export class ShowAuthedDirective implements OnInit {
   condition: boolean;
 
   ngOnInit() {
-    this.userService.isAuthenticated.subscribe(
+    // kill subscription on destroy
+    const s = this.userService.isAuthenticated.subscribe(
       (isAuthenticated) => {
         if (isAuthenticated && this.condition || !isAuthenticated && !this.condition) {
           this.viewContainer.createEmbeddedView(this.templateRef);
@@ -28,10 +32,16 @@ export class ShowAuthedDirective implements OnInit {
         }
       }
     );
+    this.subscription.add(s);
   }
 
   @Input() set appShowAuthed(condition: boolean) {
     this.condition = condition;
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
+    this.viewContainer.clear();
   }
 
 }

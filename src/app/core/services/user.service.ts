@@ -19,7 +19,7 @@ export class UserService {
     // if we immediately answer - no token ergo not initialized it might be the case that
     // tokens are in local storage but have not yet been put in memory (in the Store)
     // so in effect: user is authenticated but we don't allow them in auth only pages - like Settings
-    filter(u => u && u.initialized),
+    filter(u => Boolean(u) && u.initialized),
     map(u => Boolean(u.token))
   );
   user: User;
