@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { of, Observable } from 'rxjs';
-import { map, switchMap, catchError, tap } from 'rxjs/operators';
+import { map, switchMap, catchError, tap, debounceTime } from 'rxjs/operators';
 import { ApiService, JwtService, User } from '../../core';
 import { loadUserSuccess, clearUser } from './user.actions';
 
@@ -13,6 +13,8 @@ export class UserEffects {
     () =>
       this.actions$.pipe(
         ofType('[User] Load User'),
+        // don't start a new get user within 300 ms of each other
+        debounceTime(300),
         switchMap(
           _ =>
             this.api
