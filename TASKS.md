@@ -190,7 +190,7 @@ Did you instantiate the class-under-test in the test? Or some of the dependencie
 
 ## 3. Basic testing - Using the CLI generated tests
 
-1. Create a new component using the `ng generate component shared/notification` / `npx ng generate component shared/notifications`
+1. Create a new component using the `ng generate component shared/notifications` / `npx ng generate component shared/notifications`
    - this should generate 4 files - component, spec, html and css file
    - in the spec there is a scaffolded simple test case
 2. Run `npm test -- --watch` (see the singe test pass)
@@ -582,11 +582,12 @@ _Example for microtasks using the [flushMicrotasks thing](https://medium.com/ng-
 
 1. Install cypress `npm i cypress -D`
 2. Run it `npx cypress open` or `node_modules\.bin\cypress open`
-   - Add to package.json scripts:
+  - Add to package.json scripts:
       ```json
-      scripts: {
-        ...
-        "cypress": "cypress", "cypress.open": "npm run cypress open"
+      "scripts": {
+        //...
+        "cypress": "cypress",
+        "cypress.open": "npm run cypress open"
       }
       ```
 3. Add `{"baseUrl": "http://localhost:4200"}` to `cypress.json`
@@ -632,12 +633,11 @@ How do we know we've successfully created a user? From the UI navigation to a di
 1. We'll need to create a `register` which registers a user using the API (and NOT the SignUp page). Why?
   - Faster tests
   - Make our `Sign In` tests independent of the `Sign Up` page. If `Sign Up` page is down we can still test the `Sign In`
-1. Create the `register` helper command - [command](./files/cypress/support/commands.js.help)
-2. Add the `env: {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json` (there is a `cypress.json.help` file in `/files`)
-3. For intellisense help add a `tsconfig.json` in `./cypress` with the following content:
-
-   ```json
-   {
+2. Create the `register` helper command - [command](./files/cypress/support/commands.js.help)
+3. Add the `"env": {"API_URL": "https://conduit.productionready.io/api"}` in `cypress.json` (there is a `cypress.json.help` file in `/files`)
+4. For intellisense help add a `tsconfig.json` in `./cypress` with the following content:
+    ```json
+    {
       "compilerOptions": {
         "baseUrl": "./",
         "typeRoots": ["../node_modules/cypress/types", "./support/index.d.ts"],
@@ -645,27 +645,26 @@ How do we know we've successfully created a user? From the UI navigation to a di
         "allowJs": true
       }
     }
-   ```
-   - and a `./cypress/support/index.d.ts`
-   ```ts
-   /// <reference types="cypress" />
+    ```
+  - and a `./cypress/support/index.d.ts`
+      ```ts
+      /// <reference types="cypress" />
 
-   declare interface User {
-     email: string;
-     username: string;
-     password: string;
-   }
+      declare interface User {
+        email: string;
+        username: string;
+        password: string;
+      }
 
-   declare namespace Cypress {
-     interface Chainable<Subject> {
-       register(): Chainable<User>;
-     }
-   }
-   ```
-4. Create a a `sign-in.spec.js` file
-
-5. Test that sign in UI is in place (inputs and buttons)
-6. Test that that `a registered user can successfully sign in`
+      declare namespace Cypress {
+        interface Chainable<Subject> {
+          register(): Chainable<User>;
+        }
+      }
+      ```
+5. Create a a `sign-in.spec.js` file
+6. Test that sign in UI is in place (inputs and buttons)
+7. Test that that `a registered user can successfully sign in`
   - Use the register command to create a user
       ```ts
       const user = cy.register()
@@ -675,7 +674,7 @@ How do we know we've successfully created a user? From the UI navigation to a di
   - check that the response status is 200
 
 Review.
-5. See [help](files/cypress/support/commands.js.help)
+8. See [help](files/cypress/support/commands.js.help)
 
 ### 13. Settings tests
 
@@ -938,7 +937,7 @@ In medium and large sized apps a lot of (incidental) complexity gets added becau
 
 3. User actions
    - `ng g @ngrx/schematics:action state/user/user --api --creators` - create the action file and scaffold the users load action
-   - rename `loadUsers` `loadUsersSuccess` and `loadUsersFailure` to `loadUser` `loadUserSuccess` and `loadUserFailure` - we are loading a single user
+   - rename `loadUsersFailure` `loadUsersFailure` and `loadUsersFailure` to `loadUserFailure` `loadUserFailure` and `loadUserFailure` - we are loading a single user
    - rename `[User] Load Users` to `[User] Load User` - same reason
      - Why do we need the `[User]` thing?
 4. User effects
@@ -1224,7 +1223,7 @@ Testing with the store See https://ngrx.io/guide/store/testing
   - when Effect does not emit check the [side effects](files/src/app/state/user/user.effects.spec.ts.help#l46)
 
 
-#### E2E tests using store
+##### E2E tests using store
 It would be a very nice facility to our E2E tests if they had access to the Store. As it turns out that's relatively easy:
 ```ts
   // expose store when run in Cypress
@@ -1237,16 +1236,6 @@ Then later in the tests we can now leverage the store and dispatch actions or ge
 
 
 ### Bonus State management task
-
-### Use the Chrome Performance tool
-  - navigate to `/admin`
-  - open chrome dev tools - performance panel
-  - click the `Record` button on the top-left (or Ctrl + E)
-  - interact with the buttons
-  - click the `Stop` button
-  - notice on the Main thread the red-cornered event handlers (when hovered they say 'Warning: Event handler took xxx ms')
-  - if selected and then on the bottom tabs select Bottom-Up and order by 'Self Time' we can see the reason of our sluggish UI
-  - on the far right there's a link to the exact place in the file where the method is located (or the TS by source-map!)
 
 All 3 HomeComponent, ProfileArticlesComponent, ProfileFavoritesComponent use the articles filter functionality and separately change the filter of the article.
 Home toggles between `Feed`, `Global feed` (i.e. latest) and `Tags` in the filter

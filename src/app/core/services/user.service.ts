@@ -1,24 +1,33 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, ReplaySubject } from 'rxjs';
-
+import { select, Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
+import { clearUser, loadUser, userAuthenticated, purgeAuth } from '../../state/user/user.actions';
+import { userSelector, userState } from '../../state/user/user.reducer';
+import { User } from '../models';
 import { ApiService } from './api.service';
 import { JwtService } from './jwt.service';
-import { User } from '../models';
-import { map, distinctUntilChanged } from 'rxjs/operators';
 
 @Injectable()
 export class UserService {
-  private currentUserSubject = new BehaviorSubject<User>({} as User);
-  public currentUser = this.currentUserSubject.asObservable().pipe(distinctUntilChanged());
+  public currentUser = this.store.pipe(select(userSelector));
 
-  private isAuthenticatedSubject = new ReplaySubject<boolean>(1);
-  public isAuthenticated = this.isAuthenticatedSubject.asObservable();
+  public isAuthenticated = this.store.pipe(
+    select(userState),
+    // Why filter? We can only tell that a user is authenticated or not after initialization
+    // since the tokens live in local storage and the store lives in memory - so wait till initialized to answer
+    // if we immediately answer - no token ergo not initialized it might be the case that
+    // tokens are in local storage but have not yet been put in memory (in the Store)
+    // so in effect: user is authenticated but we don't allow them in auth only pages - like Settings
+    filter(u => Boolean(u) && u.initialized),
+    map(u => Boolean(u.token))
+  );
+  user: User;
 
   constructor(
     private apiService: ApiService,
-    private http: HttpClient,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private store: Store<any>
   ) {}
 
   // Verify JWT in localstorage with server & load user's info.
@@ -26,39 +35,42 @@ export class UserService {
   populate() {
     // If JWT detected, attempt to get & store user's info
     if (this.jwtService.getToken()) {
-      this.apiService
-        .get('/user')
-        .subscribe(data => this.setAuth(data.user), err => this.purgeAuth());
+      this.store.dispatch(userAuthenticated({ token: this.jwtService.getToken() }));
+      this.store.dispatch(loadUser());
     } else {
-      // Remove any potential remnants of previous auth states
-      this.purgeAuth();
+      this.purgeAuthDo();
     }
+
+    // to keep backwards compatibility - store a local reference to the current user object when it's emit from the store
+    this.currentUser.subscribe(u => (this.user = u));
+    // todo - try and change the local user and see the store `freeze` in operation
   }
 
-  private setAuth(user: User) {
-    // Save JWT sent from server in localstorage
-    this.jwtService.saveToken(user.token);
-    // Set current user data into observable
-    this.currentUserSubject.next(user);
-    // Set isAuthenticated to true
-    this.isAuthenticatedSubject.next(true);
-  }
-
+  // kept for backwards compatibility
   purgeAuth() {
-    // Remove JWT from localstorage
-    this.jwtService.destroyToken();
-    // Set current user to an empty object
-    this.currentUserSubject.next({} as User);
-    // Set auth status to false
-    this.isAuthenticatedSubject.next(false);
+    this.purgeAuthDo();
   }
 
+  private purgeAuthDo() {
+    this.jwtService.destroyToken();
+    // inform our store
+    this.store.dispatch(purgeAuth());
+    this.store.dispatch(clearUser());
+  }
+
+  /**
+   *  - for type `login` - Will verify user credentials with server and emit on success
+   *  - for type `register` - will try and create a user with given credentials and emit on success
+   *  - for type both and failure - returned observable will emit an error
+   * @param type login|register
+   * @param credentials email and password
+   */
   attemptAuth(type, credentials): Observable<'success'> {
     const route = type === 'login' ? '/login' : '';
     return this.apiService.post('/users' + route, { user: credentials }).pipe(
       map(
-        (data): 'success' => {
-          this.setAuth(data.user);
+        (): 'success' => {
+          this.store.dispatch(loadUser());
           return 'success';
         }
       )
@@ -66,15 +78,15 @@ export class UserService {
   }
 
   getCurrentUser(): User {
-    return this.currentUserSubject.value;
+    return this.user;
   }
 
   // Update the user on the server (email, pass, etc)
   update(user): Observable<User> {
     return this.apiService.put('/user', { user }).pipe(
       map(data => {
-        // Update the currentUser observable
-        this.currentUserSubject.next(data.user);
+        // Will update the currentUser observable - eventually
+        this.store.dispatch(loadUser());
         return data.user;
       })
     );

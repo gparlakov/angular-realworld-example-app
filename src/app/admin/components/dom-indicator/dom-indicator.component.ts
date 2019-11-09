@@ -11,7 +11,7 @@ import { ArticleDimensionProps } from '../../model/admin-article-dimensions';
 export class DomIndicatorComponent {
   degree = 0;
 
-  @ViewChild('indicator')
+  @ViewChild('indicator', { static: true })
   indicator: ElementRef;
 
   by$ = this.articleService.articleConfig$.pipe(map(cfg => cfg.by));

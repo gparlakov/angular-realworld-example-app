@@ -1,28 +1,3 @@
-// ***********************************************
-// This example commands.js shows you how to
-// create various custom commands and overwrite
-// existing commands.
-//
-// For more comprehensive examples of custom
-// commands please read more here:
-// https://on.cypress.io/custom-commands
-// ***********************************************
-//
-//
-// -- This is a parent command --
-//
-//
-// -- This is a child command --
-// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
-//
-//
-// -- This is a dual command --
-// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
-//
-//
-// -- This is will overwrite an existing command --
-// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
-
 Cypress.Commands.add('register', () => {
   const randUser =
     'e2e' +
@@ -47,25 +22,42 @@ Cypress.Commands.add('register', () => {
     });
 });
 
-Cypress.Commands.add('login', u => {
-  if (u == null || u.email == null || u.password == null) {
-    throw new Error(
-      'Need a {user: user, pass: mypass} to login! Received:' + u != null ? JSON.stringify(u) : u
-    );
-  }
-  const userReq = { email: u.email, password: u.password };
+Cypress.Commands.add(
+  'login',
+  /** @param {User} u */
+  u => {
+    if (!Boolean(u) || !Boolean(u.email) || !Boolean(u.password)) {
+      const message = `Need a {user: user, pass: mypass} to login! Received: ${
+        u != null ? JSON.stringify(u) : 'null/undefined'
+      }`;
+      cy.log(message);
+      throw new Error(message);
+    }
+    const userReq = { email: u.email, password: u.password };
 
-  return cy
-    .request('POST', `${Cypress.env('API_URL')}/users/login`, {
-      user: userReq
-    })
-    .its('body')
-    .then(v => {
-      window.localStorage.setItem('jwtToken', v.user.token);
-      return v.user;
-    });
-});
+    return cy
+      .request('POST', `${Cypress.env('API_URL')}/users/login`, {
+        user: userReq
+      })
+      .its('body')
+      .then(v => {
+        window.localStorage.setItem('jwtToken', v.user.token);
+        return v.user;
+      });
+  }
+);
 
 Cypress.Commands.add('logout', () => {
   window.localStorage.removeItem('jwtToken');
 });
+
+// -- This is a child command --
+// Cypress.Commands.add("drag", { prevSubject: 'element'}, (subject, options) => { ... })
+//
+//
+// -- This is a dual command --
+// Cypress.Commands.add("dismiss", { prevSubject: 'optional'}, (subject, options) => { ... })
+//
+//
+// -- This is will overwrite an existing command --
+// Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
