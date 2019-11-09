@@ -36,4 +36,11 @@ import { MomentModule } from 'ngx-moment';
   ],
   bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule {
+  constructor(store: any) {
+    // expose store when run in Cypress
+    if ('Cypress' in window) {
+      (window as any).__store__ = store;
+    }
+  }
+}
