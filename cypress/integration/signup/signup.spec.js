@@ -11,7 +11,7 @@ context('SignUp', () => {
     cy.get('[data-test=password-input]').should('be.visible');
   });
 
-  it.only('when user navigates to register, fills in data and clicks submit should create a user successfully', () => {
+  it('when user navigates to register, fills in data and clicks submit should create a user successfully', () => {
     cy.visit('/register');
 
     const randUser =

@@ -15,7 +15,6 @@ context('Settings page', () => {
   });
 
   it('should be visible for logged in users', () => {
-    cy.log(`${user.token} ${user.email} ${user.password}`);
     cy.visit('/settings');
     cy.get('h1').should('have.text', 'Your Settings');
   });
@@ -27,7 +26,7 @@ context('Settings page', () => {
     cy.get('[data-test=email]').should('have.value', user.email);
   });
 
-  it.only('should log out successfully', () => {
+  it('should log out successfully', () => {
     cy.visit('/settings');
     cy.get('[data-test="logout"]').click();
 

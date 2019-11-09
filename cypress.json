@@ -1,4 +1,5 @@
 {
   "baseUrl": "http://localhost:4200",
-  "env": { "API_URL": "https://conduit.productionready.io/api" }
+  "env": { "API_URL": "https://conduit.productionready.io/api" },
+  "ignoreTestFiles": "**/examples/*.spec.js"
 }

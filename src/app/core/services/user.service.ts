@@ -52,7 +52,8 @@ export class UserService {
   }
 
   private purgeAuthDo() {
-    // let the effects handle this
+    this.jwtService.destroyToken();
+    // inform our store
     this.store.dispatch(purgeAuth());
     this.store.dispatch(clearUser());
   }
